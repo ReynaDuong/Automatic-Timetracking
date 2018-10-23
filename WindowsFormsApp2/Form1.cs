@@ -39,13 +39,15 @@ namespace WindowsFormsApp2
         string elapsedTime = string.Empty;
         Stopwatch time = new Stopwatch();
         TimeSpan ts;
-        string APIK=string.Empty;
-        dynamic Jarray;
-        public Form1(dynamic JArray,string APIKEY)
+        string TOK=string.Empty;
+        string USERIDG = string.Empty;
+       
+        public Form1(dynamic Token,dynamic USERID)
         {
             InitializeComponent();
-            APIK = APIKEY;
-            Jarray = JArray;
+            TOK = Token;
+            USERIDG = USERID;
+          
             //format
             this.TopMost = true;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -240,19 +242,9 @@ namespace WindowsFormsApp2
                             elapsedT=Nowtime.AddTicks(elapsedT.TimeOfDay.Ticks);
                             // MessageBox.Show(Nowtime.ToString() + " " + elapsedT.ToString());
                             var description = prevTitle + " " + prevPs;
-                            var UserID=POSTJSON(Nowtime,elapsedT,description);
-                            
-                            foreach (Object i in Jarray)
-                            {
-                                dynamic info=JsonConvert.DeserializeObject(i.ToString());
-                                string userid = info.id;
-                                //MessageBox.Show(info.ToString());
-                                if (UserID.Equals(userid))
-                                {
-                                    label6.Text = "User: "+info.name;
-                                }
-
-                            }
+                            var UserID= USERIDG;
+                            label6.Text = "User: "+USERIDG;
+                            POSTJSON(Nowtime, elapsedT, description);
                             time.Restart();                 //reset stopwatch
                         }
                     }
@@ -273,11 +265,11 @@ namespace WindowsFormsApp2
             }//end while
             
         }
-        public string POSTJSON(DateTime NowTime,DateTime Elapsed,String Description)
+        public void POSTJSON(DateTime NowTime,DateTime Elapsed,String Description)
         {
             Rest Client2 = new Rest();
             Client2.endpoint = "https://api.clockify.me/api/workspaces/5baa4d06b079875917c7d342/timeEntries/";
-            Client2.APIKEY = APIK;
+            Client2.Token = TOK;
             Client2.httpMethod = httpVerb.POST;
             JSONTIMEENTRY TimeEntry = new JSONTIMEENTRY()
             {
@@ -295,10 +287,8 @@ namespace WindowsFormsApp2
             String Response = String.Empty;
             Response = Client2.MakeRequest();
             //MessageBox.Show(Response.ToString());
-            dynamic POSTRETURN=JsonConvert.DeserializeObject(Response);
-            string RUSER=POSTRETURN.userId;
-            //MessageBox.Show(RUSER);
-            return RUSER;
+            
+            
         }
         private void label1_Click(object sender, EventArgs e)
         {

@@ -35,51 +35,37 @@ namespace WindowsFormsApp2
 
         private void button1_Click(object sender, EventArgs e)
         {
-            String APIK = textBox1.Text.Trim();
-            
-            Rest Client = new Rest();
-            Client.endpoint = "https://api.clockify.me/api/workspaces/5baa4d06b079875917c7d342/users";
-            Client.APIKEY = APIK;
+            String UN = textBox1.Text.Trim();
+            String PW = textBox2.Text.Trim();
+            Rest Client = new Rest
+            {
+                endpoint = "https://api.clockify.me/api/auth/token/",
+                Username = UN,
+                Password = PW,
+                httpMethod= httpVerb.POST
+            };
+            var auth = "{  \"email\": "+"\""+UN+"\""+",\"password\": "+"\""+PW+"\""+" }";
+            var jsonauth = new JavaScriptSerializer().Serialize(auth);
+            Client.postJSON = auth;
             String Response = String.Empty;
             Response = Client.MakeRequest();
             String name=String.Empty;
 
 
             if (Response.Contains("Error"))
-            MessageBox.Show(Response);
+            {
+                MessageBox.Show(Response);
+            }
             else
             {
-                dynamic Array = JsonConvert.DeserializeObject(Response);
-                
-                var count1 = 0;
-                var count2 = 0;
-                foreach(Object i in Array)
-                {
-                    count1++;
-                }
-                dynamic[] UserInfo = new dynamic[count1];
-                dynamic[] Username = new dynamic[count1];
-              
-                foreach (Object i in Array)
-                {
-                    UserInfo[count2] = JsonConvert.DeserializeObject(i.ToString());
-                    Username[count2] = UserInfo[count2].name;
-                    Username[count2] = Username[count2].ToString();
-                    Username[count2] = Username[count2].ToLower();
-                    count2++;
-
-                }
-              
-                    MessageBox.Show("Login successfully, Welcome " + name);
-                    Form1 obj = new Form1(Array,APIK);
+                dynamic postR = JsonConvert.DeserializeObject(Response);
+                    MessageBox.Show("Login successfully, Welcome " + postR.name);
+                    Form1 obj = new Form1(postR.token, postR.name);
                     this.Hide();
                     obj.Closed += (s, args) => this.Close();
                     obj.Closed += (s, args) => this.Dispose();
                     obj.Show();
                 
-
-                    
-
 
             }
 

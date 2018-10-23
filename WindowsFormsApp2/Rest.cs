@@ -23,12 +23,15 @@ namespace WindowsFormsApp2
     {
         public string endpoint { get; set; }
         public httpVerb httpMethod { get; set; }
-        public string APIKEY { get; set; }
+        public string Token { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
         public AuthenticationType AuthType { get; set; }
         public string postJSON { get; set; }
         
         public Rest()
         {
+            Token = String.Empty;
             endpoint = String.Empty;
             httpMethod = httpVerb.GET;
         }
@@ -39,7 +42,8 @@ namespace WindowsFormsApp2
             request.Method = httpMethod.ToString();
             HttpWebResponse response = null;
           //    string AuthHeader = System.Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(APIKEY));
-            request.Headers.Add("X-Api-Key", APIKEY);
+           if(Token!=String.Empty)
+            request.Headers.Add("X-Auth-Token", Token);
             if(request.Method=="POST"&& postJSON!=String.Empty)
             {
                 
