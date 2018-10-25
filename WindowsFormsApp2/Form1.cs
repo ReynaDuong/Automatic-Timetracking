@@ -335,7 +335,7 @@ namespace WindowsFormsApp2
             if (match.Success ||
                 e.process.Equals("idle") ||
                 e.process.Equals("ShellExperienceHost") ||
-                (e.winTitle.Equals("file explorer") && (e.winTitle.Equals("explorer"))) ||
+                (e.winTitle.Equals("File Explorer") && (e.winTitle.Equals("explorer"))) ||
                 e.winTitle.Equals("")
                 )
                 return false;

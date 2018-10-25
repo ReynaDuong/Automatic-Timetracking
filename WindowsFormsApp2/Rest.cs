@@ -45,7 +45,7 @@ namespace WindowsFormsApp2
             if(Token!=String.Empty)
                 request.Headers.Add("X-Auth-Token", Token);
 
-            if(request.Method == "POST" && body != String.Empty)
+            if( (request.Method == "POST" || request.Method == "PUT") && body != String.Empty)
             {
                 request.ContentType = "application/json";
                 //MessageBox.Show(request.ContentType);
@@ -56,16 +56,16 @@ namespace WindowsFormsApp2
                 }
             }
 
-            else if (request.Method == "PUT" && body != String.Empty)
-            {
-                request.ContentType = "application/json";
+            //else if (request.Method == "PUT" && body != String.Empty)
+            //{
+            //    request.ContentType = "application/json";
 
-                using (StreamWriter swJSONPayload = new StreamWriter(request.GetRequestStream()))
-                {
-                    swJSONPayload.Write(body);
-                    swJSONPayload.Close();
-                }
-            }
+            //    using (StreamWriter swJSONPayload = new StreamWriter(request.GetRequestStream()))
+            //    {
+            //        swJSONPayload.Write(body);
+            //        swJSONPayload.Close();
+            //    }
+            //}
 
             try
             {
