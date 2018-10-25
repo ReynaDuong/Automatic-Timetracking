@@ -70,7 +70,8 @@ namespace WindowsFormsApp2
             pollingThread = new System.Threading.Thread(startPolling);
             pollingThread.IsBackground = true;
             pollingThread.Start();
-            
+
+            //posting thread
             System.Threading.Thread postThread;
             postThread = new System.Threading.Thread(startPosting);
             postThread.IsBackground = true;
@@ -210,9 +211,6 @@ namespace WindowsFormsApp2
             DateTime start = DateTime.Today.AddHours(5.0);      //adds 5 hours for central time
             DateTime end;
             
-
-            //MessageBox.Show(start.ToString());
-
             string description = string.Empty;
             string entryId = string.Empty;
 
@@ -334,14 +332,20 @@ namespace WindowsFormsApp2
 
             Match match = Regex.Match(e.winTitle, pattern);
 
-            if (match.Success || 
+            if (match.Success ||
                 e.process.Equals("idle") ||
-                e.process.Equals("explorer") ||
+                e.process.Equals("ShellExperienceHost") ||
+                (e.winTitle.Equals("file explorer") && (e.winTitle.Equals("explorer"))) ||
                 e.winTitle.Equals("")
                 )
-            {
                 return false;
+            else if (Regex.Match(e.url, pattern).Success)
+            {
+                if (e.winTitle.Equals("Untitled - Google Chrome"))
+                    return false;
             }
+
+
 
             return true;
         }

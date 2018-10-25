@@ -48,8 +48,7 @@ namespace WindowsFormsApp2
                                 if (val.Current.Value.StartsWith("www"))
                                     url = "http://" + val.Current.Value + "/";
                                 else
-                                    url = val.Current.Value;
-                                
+                                    url = val.Current.Value + "/";
 
                                 string pattern = @"(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/|www\.)?" +      //matches header such as http, https, ect..
                                                   "(.*?)/";     //matches the rest until / is reached
@@ -58,6 +57,7 @@ namespace WindowsFormsApp2
 
                                 if (match.Success)
                                     return match.Value;
+                                    
                                     
 
                                 //return val.Current.Value;
