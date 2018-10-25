@@ -44,11 +44,8 @@ namespace WindowsFormsApp2
         string USERIDG = string.Empty;
         Mutex myMutex = new Mutex();
 
-
         Dictionary<Event, EntryIdTime> dictionaryEvents = new Dictionary<Event, EntryIdTime>();
         Dictionary<string, string> winTitle2url = new Dictionary<string, string>();
-
-
 
         public Form1(dynamic Token,dynamic USERID)
         //public Form1()
@@ -78,8 +75,6 @@ namespace WindowsFormsApp2
             postThread = new System.Threading.Thread(startPosting);
             postThread.IsBackground = true;
             postThread.Start();
-
-
 
             //dlg = new WinEventDelegate(WinEventProc);
             // IntPtr m_hhook = SetWinEventHook(EVENT_SYSTEM_CAPTURESTART, EVENT_SYSTEM_CAPTURESTART, IntPtr.Zero, dlg, 0, 0, WINEVENT_OUTOFCONTEXT);
@@ -203,7 +198,7 @@ namespace WindowsFormsApp2
                     prevUrl = "";
 
                     label1.Text = prevTitle;
-                    label2.Text = prevPs;
+                    label2.Text = prevPs; 
                     label4.Text = prevUrl;
                 }//end non-chrome
             }//end while
@@ -226,11 +221,10 @@ namespace WindowsFormsApp2
                 System.Threading.Thread.Sleep(5000);
 
                 //looping through dictionary to post or put depending on if the event has been posted
-
                 myMutex.WaitOne();
                 try
                 {
-                    MessageBox.Show("posting");
+                    //MessageBox.Show("posting");
                     foreach (var x in dictionaryEvents)
                     {
                         if (x.Value.id.Equals(""))                  //POST, empty ID means this event hasn't been posted
@@ -304,7 +298,7 @@ namespace WindowsFormsApp2
         public void dictionaryInsert(Event e, EntryIdTime idt)
         {
             myMutex.WaitOne();
-            MessageBox.Show("insert");
+            //MessageBox.Show("insert");
             if (dictionaryEvents.ContainsKey(e))                                //if an event is already in the table, update timespan
                 dictionaryEvents[e].ts = dictionaryEvents[e].ts + ts;
             else
