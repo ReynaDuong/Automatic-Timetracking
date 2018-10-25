@@ -8,6 +8,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Windows.Forms;
 
+
 namespace WindowsFormsApp2
 {
     class GetUrl
@@ -40,7 +41,27 @@ namespace WindowsFormsApp2
                             //Console.WriteLine("Chrome URL found: " + val.Current.Value);
 
                             if (val != null)
-                                return val.Current.Value;
+                            {
+
+                                string url = string.Empty;
+
+                                if (val.Current.Value.StartsWith("www"))
+                                    url = "http://" + val.Current.Value + "/";
+                                else
+                                    url = val.Current.Value;
+                                
+
+                                string pattern = @"(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/|www\.)?" +      //matches header such as http, https, ect..
+                                                  "(.*?)/";     //matches the rest until / is reached
+
+                                Match match = Regex.Match(url, pattern);
+
+                                if (match.Success)
+                                    return match.Value;
+                                    
+
+                                //return val.Current.Value;
+                            }
                             else
                                 return "";
                             

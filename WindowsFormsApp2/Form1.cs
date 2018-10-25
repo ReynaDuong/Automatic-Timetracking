@@ -14,12 +14,12 @@ using System.Windows.Automation;
 using Newtonsoft.Json;
 using System.Web.Helpers;
 using System.Web.Script.Serialization;
+using System.Text.RegularExpressions;
+
 namespace WindowsFormsApp2
 {
     public partial class Form1 : Form
     {
-       // System.Threading.Thread workerThread;
-
         //windows event hook initializations---------------------------------------------------
         [DllImport("user32.dll")]
         static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
@@ -37,17 +37,24 @@ namespace WindowsFormsApp2
         string prevUrl = string.Empty;
         List<String> NameList = new List<String>();
         string elapsedTime = string.Empty;
-        Stopwatch time = new Stopwatch();
+        Stopwatch stopwatch = new Stopwatch();
         TimeSpan ts;
         string TOK=string.Empty;
         string USERIDG = string.Empty;
-       
+
+        Dictionary<Event, EntryIdTime> dictionaryEvents = new Dictionary<Event, EntryIdTime>();
+        Dictionary<string, string> winTitle2url = new Dictionary<string, string>();
+
+
+
         public Form1(dynamic Token,dynamic USERID)
+        //public Form1()
         {
             InitializeComponent();
             TOK = Token;
-            USERIDG = USERID;
-          
+
+            label6.Text = USERID;
+
             //format
             this.TopMost = true;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -56,240 +63,287 @@ namespace WindowsFormsApp2
             listView1.Items[listView1.Items.Count - 1].EnsureVisible();
 
             //duration
-            time.Start();
+            stopwatch.Start();
 
             //polling thread
-            System.Threading.Thread workerThread;
-            workerThread = new System.Threading.Thread(startPolling);
-            workerThread.IsBackground = true;
-            workerThread.Start();
-         
+            System.Threading.Thread pollingThread;
+            pollingThread = new System.Threading.Thread(startPolling);
+            pollingThread.IsBackground = true;
+            pollingThread.Start();
+            
+            System.Threading.Thread postThread;
+            postThread = new System.Threading.Thread(startPosting);
+            postThread.IsBackground = true;
+            postThread.Start();
+
+
+
             //dlg = new WinEventDelegate(WinEventProc);
-           // IntPtr m_hhook = SetWinEventHook(EVENT_SYSTEM_CAPTURESTART, EVENT_SYSTEM_CAPTURESTART, IntPtr.Zero, dlg, 0, 0, WINEVENT_OUTOFCONTEXT);
-
-            //dlg2 = new WinEventDelegate(WinEventProc2);
-           // IntPtr m_hhook2 = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, dlg2, 0, 0, WINEVENT_OUTOFCONTEXT);
-
+            // IntPtr m_hhook = SetWinEventHook(EVENT_SYSTEM_CAPTURESTART, EVENT_SYSTEM_CAPTURESTART, IntPtr.Zero, dlg, 0, 0, WINEVENT_OUTOFCONTEXT);
         }
         WinEventDelegate dlg = null;    //prevent program from crashing if initialized here
-        WinEventDelegate dlg2 = null;
 
-        //triggers on mouse click
+        //triggers on mouse click - reserved
         public void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
 
-            if (ProcessInfo.getForegroundProcName().Equals("chrome"))
-            {
-                if (!(string.IsNullOrEmpty(prevTitle) || string.IsNullOrEmpty(prevPs)))
-                {
-                    if (!prevTitle.Equals(ProcessInfo.getForegroundWinTitle()))
-                    {
-                        ts = time.Elapsed;
-                        elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
-
-                        ListViewItem lv = new ListViewItem(prevTitle);
-                        if (prevPs.Equals("chrome"))
-                            lv.SubItems.Add(prevUrl);
-                        else
-                            lv.SubItems.Add("");
-
-                        lv.SubItems.Add(prevPs);
-                        lv.SubItems.Add(elapsedTime);
-
-                        listView1.Items.Add(lv);
-
-                        time.Restart();                 //reset stopwatch
-                    }
-                }
-
-                //System.Threading.Thread workerThread;
-                //workerThread = new System.Threading.Thread(startPolling);
-                //workerThread.Start();
-
-                listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-            }
         }
 
-        //triggers on active window change
-        /*
-        public void WinEventProc2(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
-        {
-            if (ProcessInfo.getForegroundProcName().Equals("chrome"))
-                return;
-           
-                //only add items to list when the first process has been recorded
-                if (!(string.IsNullOrEmpty(prevTitle) || string.IsNullOrEmpty(prevPs)))
-                {
-                    ts = time.Elapsed;
-                    elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
-
-                    ListViewItem lv = new ListViewItem(prevTitle);
-                    if (prevPs.Equals("chrome"))
-                        lv.SubItems.Add(prevUrl);
-                    else
-                        lv.SubItems.Add("");
-
-                    lv.SubItems.Add(prevPs);
-                    lv.SubItems.Add(elapsedTime);
-                    listView1.Items.Add(lv);
-
-                    //time.Restart();                 //reset stopwatch
-                }
-
-                prevTitle = ProcessInfo.getForegroundWinTitle();
-                prevPs = ProcessInfo.getForegroundProcName();
-                prevUrl = "";
-
-                label1.Text = prevTitle;
-                label2.Text = prevPs;
-                label4.Text = prevUrl;
-
-                listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-
-                time.Restart();
-           
-        }
-
-    */
-
-
-        //retreive url from chrome
+        //thread to poll
         public void startPolling()
         {
-            //string url = string.Empty;
-            //System.Threading.Thread.Sleep(1500); ;    //wait until the page url is loaded
-            //url = GetUrl.chrome();
-
-            //prevUrl = url;
-            //label4.Text = url;
-
-            //prevTitle = ProcessInfo.getForegroundWinTitle();
-            //prevPs = ProcessInfo.getForegroundProcName();
-            //label1.Text = prevTitle;
-            //label2.Text = prevPs;
-
-            //time.Restart();
-
-            
-            //polling
             while (true)
             {
                 System.Threading.Thread.Sleep(50);
                 if (ProcessInfo.getForegroundProcName().Equals("chrome"))
                 {
-                    DateTime Nowtime = DateTime.Now;
-                    Nowtime = Nowtime.AddHours(5);
                     if (!prevTitle.Equals(ProcessInfo.getForegroundWinTitle())) //tab changed or navigated to different url
                     {
-                        ts = time.Elapsed;
-                        elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
+                        //stop timer
+                        ts = stopwatch.Elapsed;
 
-                        ListViewItem lv = new ListViewItem(prevTitle);
-                        if (prevPs.Equals("chrome"))
-                            lv.SubItems.Add(prevUrl);
+                        //new objects of Event and EntryIdTime for dictionary
+                        Event e = new Event();
+                        EntryIdTime idt = new EntryIdTime("", ts);
+
+                        //set title and process
+                        e.winTitle = prevTitle;
+                        if (prevPs.Equals("chrome"))        //in case of user switching focus too fast between chrome and other applications
+                            e.url = prevUrl;
                         else
-                            lv.SubItems.Add("");
+                            e.url = "";
+                        e.process = prevPs;
 
-                        lv.SubItems.Add(prevPs);
-                        lv.SubItems.Add(elapsedTime);
-                        listView1.Items.Add(lv);
-                        listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-                        DateTime elapsedT = DateTime.Parse(elapsedTime);
-                        elapsedT = Nowtime.AddTicks(elapsedT.TimeOfDay.Ticks);
-                        var description = prevTitle + " " + prevPs;
-                        POSTJSON(Nowtime, elapsedT, description);
-                        time.Restart();                 //reset stopwatch
+                        //insert events into dictionary, similar events will be updated with new TimeSpan ts
+                        dictionaryInsert(e, idt);
 
+                        //startPosting();
 
-                        prevUrl = GetUrl.chrome();
-                        label4.Text = prevUrl;
-                    }
+                        //restart timer
+                        stopwatch.Restart();                 
 
-                    if (prevUrl.Equals(""))
-                    {
-                        prevUrl = GetUrl.chrome();
-                        label4.Text = prevUrl;
-                    }
-
-                    prevTitle = ProcessInfo.getForegroundWinTitle();
-                    prevPs = ProcessInfo.getForegroundProcName();
-                    label1.Text = prevTitle;
-                    label2.Text = prevPs;
-                }
-                else
-                {
-                    DateTime Nowtime = DateTime.Now;
-                    Nowtime=Nowtime.AddHours(5);
-                    if (!(string.IsNullOrEmpty(prevTitle) || string.IsNullOrEmpty(prevPs)))
-                    {
-                        
-                            if (!prevTitle.Equals(ProcessInfo.getForegroundWinTitle()))
-                        {
-                            ts = time.Elapsed;
-                            elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
-
-                            ListViewItem lv = new ListViewItem(prevTitle);
-                            if (prevPs.Equals("chrome"))
-                                lv.SubItems.Add(prevUrl);
-                            else
-                                lv.SubItems.Add("");
-                            
-                                lv.SubItems.Add(prevPs);
-                            lv.SubItems.Add(elapsedTime);
-                            listView1.Items.Add(lv);
-                            listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-                            DateTime elapsedT=DateTime.Parse(elapsedTime);
-                            elapsedT=Nowtime.AddTicks(elapsedT.TimeOfDay.Ticks);
-                            // MessageBox.Show(Nowtime.ToString() + " " + elapsedT.ToString());
-                            var description = prevTitle + " " + prevPs;
-                            var UserID= USERIDG;
-                            label6.Text = "User: "+USERIDG;
-                            POSTJSON(Nowtime, elapsedT, description);
-                            time.Restart();                 //reset stopwatch
-                        }
-                    }
-                    
+                        //update title and process
                         prevTitle = ProcessInfo.getForegroundWinTitle();
                         prevPs = ProcessInfo.getForegroundProcName();
-                        prevUrl = "";
 
-                        label1.Text = prevTitle;
-                        label2.Text = prevPs;
+                        //fetch URL from visited site from dictionary to prevent re-seeks
+                        if (winTitle2url.ContainsKey(prevTitle))
+                        {
+                            prevUrl = winTitle2url[prevTitle];
+                            label4.Text = prevUrl;
+                            //label6.Text = "Skipped";
+                        }
+                        else
+                        {
+                            //label6.Text = "Ran";
+                            prevUrl = GetUrl.chrome();
+                            winTitle2url.Add(prevTitle, prevUrl);
+                        }
+                        
                         label4.Text = prevUrl;
-                  
-                }
-               
+                    }
 
-                //label6.Text = label1.Text + " "+label2.Text;
-                //label7.Text = elapsedTime;
+                    //in case URL is modified by regular applications due to fast focus switchings
+                    if (prevUrl.Equals(""))
+                    {
+                       
+                        if (winTitle2url.ContainsKey(prevTitle))
+                            prevUrl = winTitle2url[prevTitle];
+                        else
+                        {
+                            //label6.Text = "Oops";
+                            prevUrl = GetUrl.chrome();
+                            winTitle2url.Add(prevTitle, prevUrl);
+                           
+                        }
+                        
+                        prevUrl = GetUrl.chrome();
+                        label4.Text = prevUrl;
+                    }
+
+                    label1.Text = prevTitle;
+                    label2.Text = prevPs;
+                }//end chrome
+                else
+                {
+                    if (!(string.IsNullOrEmpty(prevTitle) || string.IsNullOrEmpty(prevPs)))     //prevent empty entry being inserted into listview
+                    {
+                        
+                        if (!prevTitle.Equals(ProcessInfo.getForegroundWinTitle()))
+                        {
+                            //stop timer
+                            ts = stopwatch.Elapsed;
+
+                            //new objects of Event and EntryIdTime for dictionary
+                            Event e = new Event();
+                            EntryIdTime idt = new EntryIdTime("", ts);
+
+                            //set title and process
+                            e.winTitle = prevTitle;
+                            if (prevPs.Equals("chrome"))        //in case of user switching focus too fast between chrome and other applications
+                                e.url = prevUrl;
+                            else
+                                e.url = "";
+                            e.process = prevPs;
+
+                            //insert events into dictionary, similar events will be updated with new TimeSpan ts
+                            dictionaryInsert(e, idt);
+                            
+                            //startPosting();
+
+                            //restart timer
+                            stopwatch.Restart();                 
+                        }
+                    }
+                    prevTitle = ProcessInfo.getForegroundWinTitle();
+                    prevPs = ProcessInfo.getForegroundProcName();
+                    prevUrl = "";
+
+                    label1.Text = prevTitle;
+                    label2.Text = prevPs;
+                    label4.Text = prevUrl;
+                }//end non-chrome
             }//end while
-            
         }
-        public void POSTJSON(DateTime NowTime,DateTime Elapsed,String Description)
+
+        //thread to post
+        public void startPosting()
+        {
+            DateTime start = DateTime.Today.AddHours(5.0);      //adds 5 hours for central time
+            DateTime end;
+
+            //MessageBox.Show(start.ToString());
+
+            string description = string.Empty;
+            string entryId = string.Empty;
+
+            while (true)
+            {
+                System.Threading.Thread.Sleep(5000);
+
+                //looping through dictionary to post or put depending on if the event has been posted
+
+                try
+                {
+                    foreach (var x in dictionaryEvents)
+                    {
+                        if (x.Value.id.Equals(""))                  //POST, empty ID means this event hasn't been posted
+                        {
+                            if (x.Key.process.Equals("chrome"))
+                                description = x.Key.url + " " + "(" + x.Key.process + ")";
+                            else
+                                description = x.Key.winTitle + " " + "(" + x.Key.process + ")";
+
+                            end = DateTime.Parse(x.Value.ts.ToString()).AddHours(5.0);
+
+                            dynamic res = POSTJSON(start, end, description, "", httpVerb.POST);
+                            dictionaryEvents[x.Key].id = res.id;    //update dictionary value to include entry ID returned from clockify
+                        }
+                        else                                        //PUT
+                        {
+                            if (x.Key.process.Equals("chrome"))
+                                description = x.Key.url + " " + "(" + x.Key.process + ")";
+                            else
+                                description = x.Key.winTitle + " " + "(" + x.Key.process + ")";
+
+                            entryId = x.Value.id;
+                            end = DateTime.Parse(x.Value.ts.ToString()).AddHours(5.0);
+
+                            POSTJSON(start, end, description, entryId, httpVerb.PUT);
+                        }
+                    }//end foreach
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                }
+
+            }//end while
+        }
+
+        public dynamic POSTJSON(DateTime start,DateTime end, string description, string entryId, httpVerb verb)
         {
             Rest Client2 = new Rest();
-            Client2.endpoint = "https://api.clockify.me/api/workspaces/5baa4d06b079875917c7d342/timeEntries/";
+            Client2.httpMethod = verb;
             Client2.Token = TOK;
-            Client2.httpMethod = httpVerb.POST;
+            
+            if (entryId.Equals("")) 
+                Client2.endpoint = "https://api.clockify.me/api/workspaces/5badbd30b079875917cd57ca/timeEntries/";
+            else
+                Client2.endpoint = "https://api.clockify.me/api/workspaces/5badbd30b079875917cd57ca/timeEntries/" + entryId;
+
             JSONTIMEENTRY TimeEntry = new JSONTIMEENTRY()
-            {
-                billable = "true",
-                start=NowTime.ToString("yyyy-MM-ddTHH:mm:ss.fff")+"Z",
-                description = Description,
-                projectId = "5babb125b079875917ca2e66",//architecture
-                taskId = "5babb3a9b079875917ca334e",
-                end= Elapsed.ToString("yyyy-MM-ddTHH:mm:ss.fff")+"Z"
-            };
-           
+                {
+                    billable = "true",
+                    start = start.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z",
+                    description = description,
+                    projectId = "5bbe5e43b079870146fc4137",//architecture
+                    taskId = "5bbe5ffbb079870146fc44d3",
+                    end = end.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z"
+                };
+
+            //MessageBox.Show(TimeEntry.start);
+            //MessageBox.Show(TimeEntry.end);
+
             TimeEntry.tagIds = new string[1];
             var json = new JavaScriptSerializer().Serialize(TimeEntry);
-            Client2.postJSON = json;
-            String Response = String.Empty;
-            Response = Client2.MakeRequest();
-            //MessageBox.Show(Response.ToString());
+            Client2.body = json;
+
+            string Response = Client2.MakeRequest();
             
-            
+            return JsonConvert.DeserializeObject(Response);                     //returns a deserialized response object
         }
+
+        public void dictionaryInsert(Event e, EntryIdTime idt)
+        {
+            if (dictionaryEvents.ContainsKey(e))                                //if an event is already in the table, update timespan
+                dictionaryEvents[e].ts = dictionaryEvents[e].ts + ts;
+            else
+            {
+                if (!filter(e))
+                    return;
+
+                dictionaryEvents.Add(e, idt);
+            }
+                    
+            
+            //clear and post all onto listview1
+            listView1.Items.Clear();
+            string elapsedTime;
+            foreach (var x in dictionaryEvents)                               
+            {
+                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", x.Value.ts.Hours, x.Value.ts.Minutes, x.Value.ts.Seconds);
+                ListViewItem lv = new ListViewItem(x.Key.winTitle);
+
+                lv.SubItems.Add(x.Key.url);
+                lv.SubItems.Add(x.Key.process);
+                lv.SubItems.Add(elapsedTime);
+                listView1.Items.Add(lv);
+                listView1.Items[listView1.Items.Count - 1].EnsureVisible();
+            }
+        }
+
+        public bool filter(Event e)                                           //returns true if entry is good for insert 
+        {
+            string pattern = @"(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/|www\.)?" +      //matches header such as http, https, ect..
+                   "(.*?)/";     //matches the rest until / is reached
+
+            Match match = Regex.Match(e.winTitle, pattern);
+
+            if (match.Success || 
+                e.process.Equals("idle") ||
+                e.process.Equals("explorer") ||
+                e.winTitle.Equals("")
+                )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+
+
         private void label1_Click(object sender, EventArgs e)
         {
 
@@ -312,6 +366,16 @@ namespace WindowsFormsApp2
         }
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
         {
 
         }
