@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.Web.Helpers;
 using System.Web.Script.Serialization;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace WindowsFormsApp2
 {
@@ -41,6 +42,8 @@ namespace WindowsFormsApp2
         TimeSpan ts;
         string TOK=string.Empty;
         string USERIDG = string.Empty;
+        Mutex myMutex = new Mutex();
+
 
         Dictionary<Event, EntryIdTime> dictionaryEvents = new Dictionary<Event, EntryIdTime>();
         Dictionary<string, string> winTitle2url = new Dictionary<string, string>();
@@ -211,6 +214,7 @@ namespace WindowsFormsApp2
         {
             DateTime start = DateTime.Today.AddHours(5.0);      //adds 5 hours for central time
             DateTime end;
+            
 
             //MessageBox.Show(start.ToString());
 
@@ -223,8 +227,10 @@ namespace WindowsFormsApp2
 
                 //looping through dictionary to post or put depending on if the event has been posted
 
+                myMutex.WaitOne();
                 try
                 {
+                    MessageBox.Show("posting");
                     foreach (var x in dictionaryEvents)
                     {
                         if (x.Value.id.Equals(""))                  //POST, empty ID means this event hasn't been posted
@@ -257,6 +263,7 @@ namespace WindowsFormsApp2
                 {
                     MessageBox.Show(ex.ToString());
                 }
+                myMutex.ReleaseMutex();
 
             }//end while
         }
@@ -296,6 +303,8 @@ namespace WindowsFormsApp2
 
         public void dictionaryInsert(Event e, EntryIdTime idt)
         {
+            myMutex.WaitOne();
+            MessageBox.Show("insert");
             if (dictionaryEvents.ContainsKey(e))                                //if an event is already in the table, update timespan
                 dictionaryEvents[e].ts = dictionaryEvents[e].ts + ts;
             else
@@ -321,6 +330,7 @@ namespace WindowsFormsApp2
                 listView1.Items.Add(lv);
                 listView1.Items[listView1.Items.Count - 1].EnsureVisible();
             }
+            myMutex.ReleaseMutex();
         }
 
         public bool filter(Event e)                                           //returns true if entry is good for insert 
