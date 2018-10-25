@@ -338,20 +338,24 @@ namespace WindowsFormsApp2
 
             Match match = Regex.Match(e.winTitle, pattern);
 
-            if (match.Success ||
-                e.process.Equals("idle") ||
-                e.process.Equals("ShellExperienceHost") ||
-                (e.winTitle.Equals("File Explorer") && (e.winTitle.Equals("explorer"))) ||
-                e.winTitle.Equals("")
+            if (match.Success)
+                return false;
+            else if (e.process.Equals("chrome"))
+            {
+                if (e.winTitle.Equals("Untitled - Google Chrome") ||
+                    e.winTitle.Equals("New Tab - Google Chrome") ||
+                    e.winTitle.Equals("Downloads - Google Chrome")
+
+                   )
+                    return false;
+
+            }
+            else if (e.process.Equals("idle") ||
+                     e.process.Equals("ShellExperienceHost") ||
+                    (e.winTitle.Equals("File Explorer") && (e.winTitle.Equals("explorer"))) ||
+                     e.winTitle.Equals("")
                 )
                 return false;
-            else if (Regex.Match(e.url, pattern).Success)
-            {
-                if (e.winTitle.Equals("Untitled - Google Chrome"))
-                    return false;
-            }
-
-
 
             return true;
         }
