@@ -132,11 +132,11 @@ namespace WindowsFormsApp2
                         {
                             prevUrl = winTitle2url[prevTitle];
                             label4.Text = prevUrl;
-                            //label6.Text = "Skipped";
+                            label8.Text = "Skipped";
                         }
                         else
                         {
-                            //label6.Text = "Ran";
+                            label8.Text = "Ran";
                             prevUrl = GetUrl.chrome();
                             winTitle2url.Add(prevTitle, prevUrl);
                         }
@@ -152,7 +152,7 @@ namespace WindowsFormsApp2
                             prevUrl = winTitle2url[prevTitle];
                         else
                         {
-                            //label6.Text = "Oops";
+                            label8.Text = "Oops";
                             prevUrl = GetUrl.chrome();
                             winTitle2url.Add(prevTitle, prevUrl);
                            
@@ -203,6 +203,7 @@ namespace WindowsFormsApp2
                     label1.Text = prevTitle;
                     label2.Text = prevPs; 
                     label4.Text = prevUrl;
+                    label8.Text = "";
                 }//end non-chrome
             }//end while
         }
