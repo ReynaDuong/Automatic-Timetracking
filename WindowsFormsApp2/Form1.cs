@@ -47,6 +47,8 @@ namespace WindowsFormsApp2
         Dictionary<Event, EntryIdTime> dictionaryEvents = new Dictionary<Event, EntryIdTime>();
         Dictionary<string, string> winTitle2url = new Dictionary<string, string>();
 
+        int i = 0;
+
         public Form1(dynamic Token,dynamic USERID)
         //public Form1()
         {
@@ -220,6 +222,10 @@ namespace WindowsFormsApp2
 
                 //looping through dictionary to post or put depending on if the event has been posted
                 myMutex.WaitOne();
+
+                label7.Text = i.ToString();
+                i++;
+
                 try
                 {
                     //MessageBox.Show("posting");
@@ -228,7 +234,7 @@ namespace WindowsFormsApp2
                         if (x.Value.id.Equals(""))                  //POST, empty ID means this event hasn't been posted
                         {
                             if (x.Key.process.Equals("chrome"))
-                                description = x.Key.url + " " + "(" + x.Key.process + ")";
+                                description = x.Key.winTitle + " - " + x.Key.url + " " + "(" + x.Key.process + ")";
                             else
                                 description = x.Key.winTitle + " " + "(" + x.Key.process + ")";
 
@@ -240,7 +246,7 @@ namespace WindowsFormsApp2
                         else                                        //PUT
                         {
                             if (x.Key.process.Equals("chrome"))
-                                description = x.Key.url + " " + "(" + x.Key.process + ")";
+                                description = x.Key.winTitle + " - " + x.Key.url + " " + "(" + x.Key.process + ")";
                             else
                                 description = x.Key.winTitle + " " + "(" + x.Key.process + ")";
 
@@ -266,7 +272,7 @@ namespace WindowsFormsApp2
             Client2.httpMethod = verb;
             Client2.Token = TOK;
             
-            if (entryId.Equals("")) 
+            if (verb.Equals("POST")) 
                 Client2.endpoint = "https://api.clockify.me/api/workspaces/5badbd30b079875917cd57ca/timeEntries/";
             else
                 Client2.endpoint = "https://api.clockify.me/api/workspaces/5badbd30b079875917cd57ca/timeEntries/" + entryId;
@@ -280,11 +286,8 @@ namespace WindowsFormsApp2
                     taskId = "5bbe5ffbb079870146fc44d3",
                     end = end.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z"
                 };
-
-            //MessageBox.Show(TimeEntry.start);
-            //MessageBox.Show(TimeEntry.end);
-
-            TimeEntry.tagIds = new string[1];
+            
+            //TimeEntry.tagIds = new string[1];
             var json = new JavaScriptSerializer().Serialize(TimeEntry);
             Client2.body = json;
 
@@ -296,13 +299,15 @@ namespace WindowsFormsApp2
         public void dictionaryInsert(Event e, EntryIdTime idt)
         {
             myMutex.WaitOne();
-            //MessageBox.Show("insert");
             if (dictionaryEvents.ContainsKey(e))                                //if an event is already in the table, update timespan
                 dictionaryEvents[e].ts = dictionaryEvents[e].ts + ts;
             else
             {
                 if (!filter(e))
+                {
+                    myMutex.ReleaseMutex();
                     return;
+                }
 
                 dictionaryEvents.Add(e, idt);
             }
@@ -322,7 +327,7 @@ namespace WindowsFormsApp2
                 listView1.Items.Add(lv);
                 listView1.Items[listView1.Items.Count - 1].EnsureVisible();
             }
-            myMutex.ReleaseMutex();
+           myMutex.ReleaseMutex();
         }
 
         public bool filter(Event e)                                           //returns true if entry is good for insert 

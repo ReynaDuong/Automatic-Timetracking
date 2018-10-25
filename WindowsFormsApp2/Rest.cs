@@ -49,27 +49,16 @@ namespace WindowsFormsApp2
             {
                 request.ContentType = "application/json";
                 //MessageBox.Show(request.ContentType);
-                using (StreamWriter swJSONPayload = new StreamWriter(request.GetRequestStream()))
+                using (StreamWriter swJSONPayload = new StreamWriter(request.GetRequestStream()))       //write 'body' into 'request'
                 {
                     swJSONPayload.Write(body);
                     swJSONPayload.Close();
                 }
             }
 
-            //else if (request.Method == "PUT" && body != String.Empty)
-            //{
-            //    request.ContentType = "application/json";
-
-            //    using (StreamWriter swJSONPayload = new StreamWriter(request.GetRequestStream()))
-            //    {
-            //        swJSONPayload.Write(body);
-            //        swJSONPayload.Close();
-            //    }
-            //}
-
             try
             {
-                response = (HttpWebResponse)request.GetResponse();
+                response = (HttpWebResponse)request.GetResponse();                                      //make the request
 
                     using (Stream ResponseStream = response.GetResponseStream())
                     {
