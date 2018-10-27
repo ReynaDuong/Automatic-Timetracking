@@ -42,7 +42,7 @@ namespace WindowsFormsApp2
         TimeSpan ts;
         string TOK=string.Empty;
         string USERIDG = string.Empty;
-        Mutex myMutex = new Mutex();
+        Mutex myMutex = new Mutex();                                //using mutex to prevent threads from modifying dictionaryEvents values simultaneously
 
         Dictionary<Event, EntryIdTime> dictionaryEvents = new Dictionary<Event, EntryIdTime>();
         Dictionary<string, string> winTitle2url = new Dictionary<string, string>();
@@ -74,10 +74,10 @@ namespace WindowsFormsApp2
             pollingThread.Start();
 
             //posting thread
-            System.Threading.Thread postThread;
-            postThread = new System.Threading.Thread(startPosting);
-            postThread.IsBackground = true;
-            postThread.Start();
+            //System.Threading.Thread postThread;
+            //postThread = new System.Threading.Thread(startPosting);
+            //postThread.IsBackground = true;
+            //postThread.Start();
 
             //dlg = new WinEventDelegate(WinEventProc);
             // IntPtr m_hhook = SetWinEventHook(EVENT_SYSTEM_CAPTURESTART, EVENT_SYSTEM_CAPTURESTART, IntPtr.Zero, dlg, 0, 0, WINEVENT_OUTOFCONTEXT);
@@ -118,8 +118,6 @@ namespace WindowsFormsApp2
                         //insert events into dictionary, similar events will be updated with new TimeSpan ts
                         dictionaryInsert(e, idt);
 
-                        //startPosting();
-
                         //restart timer
                         stopwatch.Restart();                 
 
@@ -127,7 +125,7 @@ namespace WindowsFormsApp2
                         prevTitle = ProcessInfo.getForegroundWinTitle();
                         prevPs = ProcessInfo.getForegroundProcName();
 
-                        //fetch URL from visited site from dictionary to prevent re-seeks
+                        //fetch URL of visited site from dictionary to prevent re-seeks
                         if (winTitle2url.ContainsKey(prevTitle))
                         {
                             prevUrl = winTitle2url[prevTitle];
@@ -137,7 +135,12 @@ namespace WindowsFormsApp2
                         else
                         {
                             label8.Text = "Ran";
+                            //System.Threading.Thread.Sleep(1000);
                             prevUrl = GetUrl.chrome();
+
+                            prevTitle = ProcessInfo.getForegroundWinTitle();        //updating winTitle after grabbing URL for higher accuracy...
+                                                                                    //...due to it not changing at the same as the URL in chrome
+
                             winTitle2url.Add(prevTitle, prevUrl);
                         }
                         
@@ -153,12 +156,21 @@ namespace WindowsFormsApp2
                         else
                         {
                             label8.Text = "Oops";
+                            //System.Threading.Thread.Sleep(1000);
                             prevUrl = GetUrl.chrome();
+
+                            prevTitle = ProcessInfo.getForegroundWinTitle();        //updating winTitle
+
                             winTitle2url.Add(prevTitle, prevUrl);
                            
                         }
-                        
+
+                        //System.Threading.Thread.Sleep(1000);
                         prevUrl = GetUrl.chrome();
+
+                        prevTitle = ProcessInfo.getForegroundWinTitle();            //udpating winTItle
+
+
                         label4.Text = prevUrl;
                     }
 
@@ -189,8 +201,6 @@ namespace WindowsFormsApp2
 
                             //insert events into dictionary, similar events will be updated with new TimeSpan ts
                             dictionaryInsert(e, idt);
-                            
-                            //startPosting();
 
                             //restart timer
                             stopwatch.Restart();                 
@@ -206,7 +216,7 @@ namespace WindowsFormsApp2
                     label8.Text = "";
                 }//end non-chrome
             }//end while
-        }
+        }//end polling thread
 
         //thread to post
         public void startPosting()
@@ -229,7 +239,6 @@ namespace WindowsFormsApp2
 
                 try
                 {
-                    //MessageBox.Show("posting");
                     foreach (var x in dictionaryEvents)
                     {
                         if (x.Value.id.Equals(""))                  //POST, empty ID means this event hasn't been posted
@@ -265,7 +274,7 @@ namespace WindowsFormsApp2
                 myMutex.ReleaseMutex();
 
             }//end while
-        }
+        }//end posting thread
 
         public dynamic POSTJSON(DateTime start,DateTime end, string description, string entryId, httpVerb verb)
         {
@@ -279,14 +288,14 @@ namespace WindowsFormsApp2
                 Client2.endpoint = "https://api.clockify.me/api/workspaces/5badbd30b079875917cd57ca/timeEntries/" + entryId;
 
             JSONTIMEENTRY TimeEntry = new JSONTIMEENTRY()
-                {
-                    billable = "true",
-                    start = start.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z",
-                    description = description,
-                    projectId = "5bbe5e43b079870146fc4137",//architecture
-                    taskId = "5bbe5ffbb079870146fc44d3",
-                    end = end.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z"
-                };
+            {
+                billable = "true",
+                start = start.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z",
+                description = description,
+                projectId = "5bbe5e43b079870146fc4137",//architecture
+                taskId = "5bbe5ffbb079870146fc44d3",
+                end = end.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z"
+            };
             
             //TimeEntry.tagIds = new string[1];
             var json = new JavaScriptSerializer().Serialize(TimeEntry);
@@ -338,14 +347,15 @@ namespace WindowsFormsApp2
 
             Match match = Regex.Match(e.winTitle, pattern);
 
-            if (match.Success)
+            if (match.Success)                                              //if winTitle is an url
                 return false;
+
             else if (e.process.Equals("chrome"))
             {
                 if (e.winTitle.Equals("Untitled - Google Chrome") ||
                     e.winTitle.Equals("New Tab - Google Chrome") ||
-                    e.winTitle.Equals("Downloads - Google Chrome")
-
+                    e.winTitle.Equals("Downloads - Google Chrome") ||
+                    e.url.Equals("")
                    )
                     return false;
 

@@ -38,12 +38,16 @@ namespace WindowsFormsApp2
                         if (patterns.Length > 0)
                         {
                             ValuePattern val = (ValuePattern)elmUrlBar.GetCurrentPattern(patterns[0]);
-                            //Console.WriteLine("Chrome URL found: " + val.Current.Value);
 
                             if (val != null)
                             {
 
                                 string url = string.Empty;
+
+                               //MessageBox.Show(val.Current.Value);
+
+                                if (val.Current.Value.Equals(""))
+                                    return "";
 
                                 if (val.Current.Value.StartsWith("www"))
                                     url = "http://" + val.Current.Value + "/";
@@ -57,14 +61,9 @@ namespace WindowsFormsApp2
 
                                 if (match.Success)
                                     return match.Value;
-                                    
-                                    
-
-                                //return val.Current.Value;
                             }
-                            else
-                                return "";
-                            
+
+                            return "";
                         }
                     }
                 }
