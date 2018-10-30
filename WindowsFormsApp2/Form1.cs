@@ -74,10 +74,10 @@ namespace WindowsFormsApp2
             pollingThread.Start();
 
             //posting thread
-            //System.Threading.Thread postThread;
-            //postThread = new System.Threading.Thread(startPosting);
-            //postThread.IsBackground = true;
-            //postThread.Start();
+            System.Threading.Thread postThread;
+            postThread = new System.Threading.Thread(startPosting);
+            postThread.IsBackground = true;
+            postThread.Start();
 
             //dlg = new WinEventDelegate(WinEventProc);
             // IntPtr m_hhook = SetWinEventHook(EVENT_SYSTEM_CAPTURESTART, EVENT_SYSTEM_CAPTURESTART, IntPtr.Zero, dlg, 0, 0, WINEVENT_OUTOFCONTEXT);
@@ -98,81 +98,91 @@ namespace WindowsFormsApp2
                 System.Threading.Thread.Sleep(50);
                 if (ProcessInfo.getForegroundProcName().Equals("chrome"))
                 {
-                    if (!prevTitle.Equals(ProcessInfo.getForegroundWinTitle())) //tab changed or navigated to different url
+                    try
                     {
-                        //stop timer
-                        ts = stopwatch.Elapsed;
 
-                        //new objects of Event and EntryIdTime for dictionary
-                        Event e = new Event();
-                        EntryIdTime idt = new EntryIdTime("", ts);
 
-                        //set title and process
-                        e.winTitle = prevTitle;
-                        if (prevPs.Equals("chrome"))        //in case of user switching focus too fast between chrome and other applications
-                            e.url = prevUrl;
-                        else
-                            e.url = "";
-                        e.process = prevPs;
-
-                        //insert events into dictionary, similar events will be updated with new TimeSpan ts
-                        dictionaryInsert(e, idt);
-
-                        //restart timer
-                        stopwatch.Restart();                 
-
-                        //update title and process
-                        prevTitle = ProcessInfo.getForegroundWinTitle();
-                        prevPs = ProcessInfo.getForegroundProcName();
-
-                        //fetch URL of visited site from dictionary to prevent re-seeks
-                        if (winTitle2url.ContainsKey(prevTitle))
+                        if (!prevTitle.Equals(ProcessInfo.getForegroundWinTitle())) //tab changed or navigated to different url
                         {
-                            prevUrl = winTitle2url[prevTitle];
+                            //stop timer
+                            ts = stopwatch.Elapsed;
+
+                            //new objects of Event and EntryIdTime for dictionary
+                            Event e = new Event();
+                            EntryIdTime idt = new EntryIdTime("", ts);
+
+                            //set title and process
+                            e.winTitle = prevTitle;
+                            if (prevPs.Equals("chrome"))        //in case of user switching focus too fast between chrome and other applications
+                                e.url = prevUrl;
+                            else
+                                e.url = "";
+                            e.process = prevPs;
+
+                            //insert events into dictionary, similar events will be updated with new TimeSpan ts
+                            dictionaryInsert(e, idt);
+
+                            //restart timer
+                            stopwatch.Restart();
+
+                            //update title and process
+                            prevTitle = ProcessInfo.getForegroundWinTitle();
+                            prevPs = ProcessInfo.getForegroundProcName();
+
+                            //fetch URL of visited site from dictionary to prevent re-seeks
+                            if (winTitle2url.ContainsKey(prevTitle))
+                            {
+                                label8.Text = "Skipped";
+                                prevUrl = winTitle2url[prevTitle];
+                                label4.Text = prevUrl;
+                            }
+                            else
+                            {
+                                label8.Text = "Ran";
+                                prevUrl = GetUrl.chrome();
+
+                                prevTitle = ProcessInfo.getForegroundWinTitle();        //updating winTitle after grabbing URL for higher accuracy...
+                                                                                        //...due to it not changing at the same as the URL in chrome
+                                winTitle2url.Add(prevTitle, prevUrl);                   //stores into table
+                            }
+
                             label4.Text = prevUrl;
-                            label8.Text = "Skipped";
                         }
-                        else
+
+                        //in case URL is modified by regular applications due to fast focus switchings
+                        if (prevUrl.Equals(""))
                         {
-                            label8.Text = "Ran";
-                            //System.Threading.Thread.Sleep(1000);
-                            prevUrl = GetUrl.chrome();
+                            do
+                            {
+                                label8.Text = "Oops";
+                                prevUrl = GetUrl.chrome();
+                                prevTitle = ProcessInfo.getForegroundWinTitle();        //updating winTitle
 
-                            prevTitle = ProcessInfo.getForegroundWinTitle();        //updating winTitle after grabbing URL for higher accuracy...
-                                                                                    //...due to it not changing at the same as the URL in chrome
+                                winTitle2url.Add(prevTitle, prevUrl);                   //stores into table
+                                label4.Text = prevUrl;
+                            }
+                            while (prevUrl.Equals(""));
 
-                            winTitle2url.Add(prevTitle, prevUrl);
+                            
                         }
-                        
-                        label4.Text = prevUrl;
                     }
-
-                    //in case URL is modified by regular applications due to fast focus switchings
-                    if (prevUrl.Equals(""))
+                    catch (Exception e)
                     {
-                       
-                        if (winTitle2url.ContainsKey(prevTitle))
-                            prevUrl = winTitle2url[prevTitle];
-                        else
-                        {
-                            label8.Text = "Oops";
-                            //System.Threading.Thread.Sleep(1000);
-                            prevUrl = GetUrl.chrome();
+                        /*
+                        in case of extreme fast window switching causing 'prevTitle'
+                        to be corrupted during capture and ultimately leading winTitle2url.ContainsKey(prevTitle)
+                        to return FALSE, when it supposed to be TRUE if the dictionary already have such
+                        an entry (when captured correctly), an exception will be thrown when trying to insert a non-corrupted version
+                        of 'prevTitle' into dictionary, which is obtained right before winTitle2url.Add(prevTitle, prevUrl)
+                        in line 147
+                        */
+                        //MessageBox.Show(e.ToString());
 
-                            prevTitle = ProcessInfo.getForegroundWinTitle();        //updating winTitle
-
-                            winTitle2url.Add(prevTitle, prevUrl);
-                           
-                        }
-
-                        //System.Threading.Thread.Sleep(1000);
-                        prevUrl = GetUrl.chrome();
-
-                        prevTitle = ProcessInfo.getForegroundWinTitle();            //udpating winTItle
-
-
-                        label4.Text = prevUrl;
-                    }
+                        winTitle2url.Remove(prevTitle);                                 //remove corrupted winTitle
+                        continue;                                                       
+                        //MessageBox.Show(e.ToString());                               
+                    }                                                                   
+                                                                                        
 
                     label1.Text = prevTitle;
                     label2.Text = prevPs;
@@ -342,30 +352,42 @@ namespace WindowsFormsApp2
 
         public bool filter(Event e)                                           //returns true if entry is good for insert 
         {
-            string pattern = @"(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/|www\.)?" +      //matches header such as http, https, ect..
-                   "(.*?)/";     //matches the rest until / is reached
+            string pattern = @"^(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/|www\.)";       //starts with these
 
             Match match = Regex.Match(e.winTitle, pattern);
 
-            if (match.Success)                                              //if winTitle is an url
-                return false;
+            //MessageBox.Show(match.Value);
+            
 
+            if (match.Success)                                                  //if winTitle is an url
+            {
+                MessageBox.Show(match.Value);
+                return false;
+            }
+                
             else if (e.process.Equals("chrome"))
             {
+                //MessageBox.Show("Here2");
                 if (e.winTitle.Equals("Untitled - Google Chrome") ||
                     e.winTitle.Equals("New Tab - Google Chrome") ||
                     e.winTitle.Equals("Downloads - Google Chrome") ||
+                    e.url.Equals("/") ||
                     e.url.Equals("")
                    )
+                {
                     return false;
-
+                }
             }
             else if (e.process.Equals("idle") ||
                      e.process.Equals("ShellExperienceHost") ||
                     (e.winTitle.Equals("File Explorer") && (e.winTitle.Equals("explorer"))) ||
                      e.winTitle.Equals("")
                 )
+            {
+                //MessageBox.Show("Here3");
                 return false;
+            }
+                
 
             return true;
         }

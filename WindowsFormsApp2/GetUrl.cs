@@ -46,8 +46,8 @@ namespace WindowsFormsApp2
 
                                //MessageBox.Show(val.Current.Value);
 
-                                if (val.Current.Value.Equals(""))
-                                    return "";
+                                //if (val.Current.Value.Equals(""))
+                                //    return "";
 
                                 if (val.Current.Value.StartsWith("www"))
                                     url = "http://" + val.Current.Value + "/";
@@ -59,22 +59,23 @@ namespace WindowsFormsApp2
 
                                 Match match = Regex.Match(url, pattern);
 
+                                //MessageBox.Show("GET URL " + match.Value);
+
                                 if (match.Success)
                                     return match.Value;
+                                
+                                    
                             }
-
-                            return "";
-                        }
-                    }
-                }
+                        }//end if length > 0
+                    }//end elmUrlBar != null
+                }//end for each loop
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.ToString());
             }
 
-
-            return "";
+            return string.Empty;
 
         }
         
