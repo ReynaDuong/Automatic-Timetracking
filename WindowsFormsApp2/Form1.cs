@@ -74,10 +74,10 @@ namespace WindowsFormsApp2
             pollingThread.Start();
 
             //posting thread
-            //System.Threading.Thread postThread;
-            //postThread = new System.Threading.Thread(startPosting);
-            //postThread.IsBackground = true;
-            //postThread.Start();
+            System.Threading.Thread postThread;
+            postThread = new System.Threading.Thread(startPosting);
+            postThread.IsBackground = true;
+            postThread.Start();
 
             //dlg = new WinEventDelegate(WinEventProc);
             // IntPtr m_hhook = SetWinEventHook(EVENT_SYSTEM_CAPTURESTART, EVENT_SYSTEM_CAPTURESTART, IntPtr.Zero, dlg, 0, 0, WINEVENT_OUTOFCONTEXT);
@@ -336,7 +336,7 @@ namespace WindowsFormsApp2
             //clear and post all onto listview1
             listView1.Items.Clear();
             string elapsedTime;
-            //listView1.BeginUpdate();
+            listView1.BeginUpdate();
             foreach (var x in dictionaryEvents)                               
             {
                 elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", x.Value.ts.Hours, x.Value.ts.Minutes, x.Value.ts.Seconds);
@@ -347,7 +347,7 @@ namespace WindowsFormsApp2
                 lv.SubItems.Add(elapsedTime);
                 listView1.Items.Add(lv);
             }
-            //listView1.EndUpdate();
+            listView1.EndUpdate();
             listView1.Items[listView1.Items.Count - 1].EnsureVisible();
             myMutex.ReleaseMutex();
         }
