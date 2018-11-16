@@ -35,10 +35,11 @@ namespace WindowsFormsApp2
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string userName = textBox1.Text.Trim();
-            string passWord = textBox2.Text.Trim();
+            //string userName = textBox1.Text.Trim();
+            //string passWord = textBox2.Text.Trim();
             //string userName = "lyw81718@gmail.com";
-            //string passWord = "123456";
+            string userName = "xxlap1xx@yahoo.com";
+            string passWord = "123456";
 
             try
             {

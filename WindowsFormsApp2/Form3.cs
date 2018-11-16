@@ -87,8 +87,8 @@ namespace WindowsFormsApp2
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            //check if child node
-            if (treeView1.SelectedNode.Nodes.Count == 0)
+            //check if child node (level 1 for project)
+            if (treeView1.SelectedNode.Level == 1)
                 button2.Enabled = true;
             else
                 button2.Enabled = false;

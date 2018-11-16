@@ -21,7 +21,6 @@ namespace WindowsFormsApp2
         public string taskName = string.Empty;
 
         public string value = string.Empty;
-        
 
         public Form4()
         {
@@ -85,8 +84,8 @@ namespace WindowsFormsApp2
         //when a tree node is selected
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            //check if child node
-            if (treeView1.SelectedNode.Nodes.Count == 0)                            
+            //check if child node (level 2 for tasks)
+            if (treeView1.SelectedNode.Level == 2)
             {
                 workspaceID = treeView1.SelectedNode.Parent.Parent.Tag.ToString();
                 projectID = treeView1.SelectedNode.Parent.Tag.ToString();
@@ -95,12 +94,20 @@ namespace WindowsFormsApp2
                 workspaceName = treeView1.SelectedNode.Parent.Parent.Text;
                 projectName = treeView1.SelectedNode.Parent.Text;
                 taskName = treeView1.SelectedNode.Text;
-                
+
                 loadListboxes();
                 buttonToggle("on");
             }
             else
+            {
                 buttonToggle("off");
+                listBox1.Items.Clear();
+                listBox2.Items.Clear();
+            }
+                
+            
+
+            return;
         }
 
         //load processes and urls associations from database for selected task in the tree
@@ -229,6 +236,7 @@ namespace WindowsFormsApp2
                 button2.Enabled = true;
                 button3.Enabled = true;
                 button4.Enabled = true;
+                button5.Enabled = true;
                 textBox1.Enabled = true;
                 textBox2.Enabled = true;
             }
@@ -238,6 +246,7 @@ namespace WindowsFormsApp2
                 button2.Enabled = false;
                 button3.Enabled = false;
                 button4.Enabled = false;
+                button5.Enabled = false;
                 textBox1.Enabled = false;
                 textBox2.Enabled = false;
             }
@@ -257,14 +266,6 @@ namespace WindowsFormsApp2
 
         private void button5_Click(object sender, EventArgs e)
         {
-            if (Global.projectId.Equals(string.Empty))
-            {
-                MessageBox.Show("Please choose a project to begin session.");
-                
-                this.Close();
-                return;
-            }
-
             Global.chosen = 1;
             this.Close();
         }

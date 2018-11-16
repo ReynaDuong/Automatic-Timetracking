@@ -71,6 +71,7 @@ namespace WindowsFormsApp2
             startPollingMutex.WaitOne();
             startPostingMutex.WaitOne();
 
+
             //polling thread
             System.Threading.Thread pollingThread;
             pollingThread = new System.Threading.Thread(startPolling);
