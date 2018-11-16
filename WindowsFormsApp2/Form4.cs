@@ -266,6 +266,14 @@ namespace WindowsFormsApp2
 
         private void button5_Click(object sender, EventArgs e)
         {
+            if (Global.projectId.Equals(string.Empty))
+            {
+                MessageBox.Show("Please choose a project to begin session.");
+
+                this.Close();
+                return;
+            }
+
             Global.chosen = 1;
             this.Close();
         }
