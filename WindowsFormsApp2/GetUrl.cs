@@ -28,8 +28,10 @@ namespace WindowsFormsApp2
 
                     // find the automation element
                     AutomationElement elm = AutomationElement.FromHandle(chrome.MainWindowHandle);
-                    AutomationElement elmUrlBar = elm.FindFirst(TreeScope.Descendants,
-                      new PropertyCondition(AutomationElement.NameProperty, "Address and search bar"));
+                    AutomationElement elmUrlBar = elm.FindFirst(TreeScope.Descendants, 
+                                                                new PropertyCondition(AutomationElement.NameProperty, "Address and search bar"));
+
+                    //MessageBox.Show("here");
 
                     // if it can be found, get the value from the URL bar
                     if (elmUrlBar != null)
@@ -54,7 +56,7 @@ namespace WindowsFormsApp2
                                 Match match = Regex.Match(url, pattern);
 
                                 if (match.Success)
-                                    return match.Value;
+                                    return trim(match.Value);
                             }
                         }//end if length > 0
                     }//end elmUrlBar != null
@@ -64,10 +66,32 @@ namespace WindowsFormsApp2
             {
                 MessageBox.Show(e.ToString());
             }
-
-            return string.Empty;
-
+            return "";
         }
-        
+
+        //remove http, https, etc..
+        private static string trim(string url)
+        {
+            string trimmed = string.Empty;
+            int count = 0;
+
+            //for testing, remove http or https, and trailing / from url
+            if (url.StartsWith("https://www."))
+                count = 12;
+            else if (url.StartsWith("https://"))
+                count = 8;
+            
+            else if (url.StartsWith("http://www."))
+                count = 11;
+            
+            else if (url.StartsWith("http://"))
+                count = 7;
+            
+
+            trimmed = url.Remove(0, count);
+            trimmed = trimmed.Substring(0, trimmed.Length - 1);
+
+            return trimmed;
+        }
     }
 }

@@ -28,13 +28,8 @@ namespace WindowsFormsApp2
         public string Password { get; set; }
         public AuthenticationType AuthType { get; set; }
         public string body { get; set; }
-        
-        public Rest()
-        {
-            Token = String.Empty;
-            endpoint = String.Empty;
-            httpMethod = httpVerb.GET;
-        }
+
+
         public string MakeRequest()
         {
             string StrResponseValue = String.Empty;
@@ -42,7 +37,7 @@ namespace WindowsFormsApp2
             request.Method = httpMethod.ToString();
             HttpWebResponse response = null;
           //    string AuthHeader = System.Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(APIKEY));
-            if(Token!=String.Empty)
+            if(Token != String.Empty)
                 request.Headers.Add("X-Auth-Token", Token);
 
             if( (request.Method == "POST" || request.Method == "PUT") && body != String.Empty)

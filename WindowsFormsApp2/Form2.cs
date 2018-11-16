@@ -35,48 +35,33 @@ namespace WindowsFormsApp2
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //String UN = textBox1.Text.Trim();
-            //String PW = textBox2.Text.Trim();
-            string UN = "lyw81718@gmail.com";
-            string PW = "123456";
-            Rest Client = new Rest
+            string userName = textBox1.Text.Trim();
+            string passWord = textBox2.Text.Trim();
+            //string userName = "lyw81718@gmail.com";
+            //string passWord = "123456";
+
+            try
             {
-                endpoint = "https://api.clockify.me/api/auth/token/",
-                Username = UN,
-                Password = PW,
-                httpMethod= httpVerb.POST
-            };
-            var auth = "{  \"email\": "+"\""+UN+"\""+",\"password\": "+"\""+PW+"\""+" }";
-            var jsonauth = new JavaScriptSerializer().Serialize(auth);
-            Client.body = auth;
+               Dto.AuthResponse Response = API.login(userName, passWord);
 
-            String Response = Client.MakeRequest();
-
-            String name=String.Empty;
-
-
-            if (Response.Contains("Error"))
-            {
-                MessageBox.Show(Response);
-            }
-            else
-            {
-                dynamic postR = JsonConvert.DeserializeObject(Response);
-;
-
-                //MessageBox.Show("" + postR.membership.userId);
-                MessageBox.Show("Login successfully, Welcome " + postR.name);
-
-                Form1 obj = new Form1(postR.token, postR.name);
-                this.Hide();
-                obj.Closed += (s, args) => this.Close();
-                obj.Closed += (s, args) => this.Dispose();
-                obj.Show();
-
+               Global.token = Response.token;
+               Global.name = Response.name;
 
             }
+            catch(Exception ex)
+            {
+                //MessageBox.Show(ex.ToString());
+                MessageBox.Show("Most likely wrong username/password, exception will be handled soon. \n\nExiting...");
+                Application.Exit();
+            }
 
-            // 
+
+
+            Form1 obj = new Form1();
+            this.Hide();
+            obj.Closed += (s, args) => this.Close();
+            obj.Closed += (s, args) => this.Dispose();
+            obj.Show();
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -86,7 +71,8 @@ namespace WindowsFormsApp2
 
         private void Form2_Load(object sender, EventArgs e)
         {
-
+            this.ActiveControl = textBox1;
+            this.CenterToScreen();
         }
     }
 }

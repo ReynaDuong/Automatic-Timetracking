@@ -31,41 +31,45 @@ namespace WindowsFormsApp2
         private const uint WINEVENT_OUTOFCONTEXT = 0;
         private const uint EVENT_SYSTEM_FOREGROUND = 3;             //win title change event
         private const uint EVENT_OBJECT_NAMECHANGE = 0X800C;        //win title change event - can detect tab change
-        private const uint  EVENT_SYSTEM_CAPTURESTART = 0x0008;
+        private const uint EVENT_SYSTEM_CAPTURESTART = 0x0008;
 
         string prevTitle = string.Empty;
         string prevPs = string.Empty;
         string prevUrl = string.Empty;
-        List<String> NameList = new List<String>();
         string elapsedTime = string.Empty;
         Stopwatch stopwatch = new Stopwatch();
         TimeSpan ts;
-        string TOK=string.Empty;
-        string USERIDG = string.Empty;
-        Mutex myMutex = new Mutex();                                //using mutex to prevent threads from modifying dictionaryEvents values simultaneously
 
-        Dictionary<Event, EntryIdTime> dictionaryEvents = new Dictionary<Event, EntryIdTime>();
+        //using mutex to prevent threads from modifying dictionaryEvents values simultaneously
+        Mutex myMutex = new Mutex();                                
+        Mutex startPollingMutex = new Mutex();
+        Mutex startPostingMutex = new Mutex();
+
+
         Dictionary<string, string> winTitle2url = new Dictionary<string, string>();
 
         int i = 0;
 
-        public Form1(dynamic Token,dynamic USERID)
+        public Form1()
         //public Form1()
         {
             InitializeComponent();
-            TOK = Token;
-
-            label6.Text = USERID;
+            label6.Text = Global.name;
+            label9.Text = "Choose a project to begin session...";
 
             //format
             this.TopMost = true;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = true;
             this.MinimizeBox = true;
+            this.CenterToScreen();
             listView1.Items[listView1.Items.Count - 1].EnsureVisible();
 
-            //duration
-            stopwatch.Start();
+
+
+            //wait until a project is selected
+            startPollingMutex.WaitOne();
+            startPostingMutex.WaitOne();
 
             //polling thread
             System.Threading.Thread pollingThread;
@@ -93,6 +97,12 @@ namespace WindowsFormsApp2
         //thread to poll
         public void startPolling()
         {
+            //wait for project selection before starting
+            startPollingMutex.WaitOne(-1, false);                                
+
+            //duration
+            stopwatch.Start();
+
             while (true)
             {
                 System.Threading.Thread.Sleep(50);
@@ -100,73 +110,65 @@ namespace WindowsFormsApp2
                 {
                     try
                     {
-
-
                         if (!prevTitle.Equals(ProcessInfo.getForegroundWinTitle())) //tab changed or navigated to different url
                         {
-                            //stop timer
                             ts = stopwatch.Elapsed;
-
-                            //new objects of Event and EntryIdTime for dictionary
-                            Event e = new Event();
-                            EntryIdTime idt = new EntryIdTime("", ts);
-
-                            //set title and process
-                            e.winTitle = prevTitle;
-                            if (prevPs.Equals("chrome"))        //in case of user switching focus too fast between chrome and other applications
-                                e.url = prevUrl;
-                            else
-                                e.url = "";
-                            e.process = prevPs;
-
-                            //insert events into dictionary, similar events will be updated with new TimeSpan ts
-                            dictionaryInsert(e, idt);
-
-                            //restart timer
+                            
+                            //insert event into dictionary (association will be performed in there)
+                            dictionaryInsert();
+                            
                             stopwatch.Restart();
 
                             //update title and process
                             prevTitle = ProcessInfo.getForegroundWinTitle();
-                            prevPs = ProcessInfo.getForegroundProcName();
+                            prevPs = ProcessInfo.getForegroundProcName().ToLower();
 
                             //fetch URL of visited site from dictionary to prevent re-seeks
                             if (winTitle2url.ContainsKey(prevTitle))
                             {
                                 label8.Text = "Skipped";
                                 prevUrl = winTitle2url[prevTitle];
-                                label4.Text = prevUrl;
                             }
                             else
                             {
                                 label8.Text = "Ran";
-                                prevUrl = GetUrl.chrome();
+
+                                Thread urlThread = new Thread(getChromeUrl);
+                                urlThread.Start();
+                                urlThread.Join();
+                                //prevUrl = GetUrl.chrome();
 
                                 prevTitle = ProcessInfo.getForegroundWinTitle();        //updating winTitle after grabbing URL for higher accuracy...
                                                                                         //...due to it not changing at the same as the URL in chrome
+
                                 winTitle2url.Add(prevTitle, prevUrl);                   //stores into table
                             }
-
-                            label4.Text = prevUrl;
                         }
 
                         //in case URL is modified by regular applications due to fast focus switchings
                         if (prevUrl.Equals(""))
                         {
-                            do
+                            label8.Text = "Oops ";
+
+                            if (winTitle2url.ContainsKey(prevTitle))
                             {
-                                label8.Text = "Oops";
-                                prevUrl = GetUrl.chrome();
+                                prevUrl = winTitle2url[prevTitle];
+                                //MessageBox.Show(prevUrl);
+                            }
+                                
+                            else
+                            {
+                                Thread urlThread = new Thread(getChromeUrl);
+                                urlThread.Start();
+                                urlThread.Join();
+                                //prevUrl = GetUrl.chrome();
                                 prevTitle = ProcessInfo.getForegroundWinTitle();        //updating winTitle
 
                                 winTitle2url.Add(prevTitle, prevUrl);                   //stores into table
-                                label4.Text = prevUrl;
                             }
-                            while (prevUrl.Equals(""));
-
-                            
                         }
                     }
-                    catch (Exception e)
+                    catch
                     {
                         /*
                         in case of extreme fast window switching causing 'prevTitle'
@@ -176,52 +178,34 @@ namespace WindowsFormsApp2
                         of 'prevTitle' into dictionary, which is obtained right before winTitle2url.Add(prevTitle, prevUrl)
                         in line 147
                         */
-                        //MessageBox.Show(e.ToString());
-
-                        winTitle2url.Remove(prevTitle);                                 //remove corrupted winTitle
-                        continue;                                                       
-                        //MessageBox.Show(e.ToString());                               
-                    }                                                                   
-                                                                                        
-
+                        winTitle2url.Remove(prevTitle);                                         //remove corrupted winTitle entry from dictionary
+                        continue;
+                    }
                     label1.Text = prevTitle;
                     label2.Text = prevPs;
+                    label4.Text = prevUrl;
                 }//end chrome
-                else
+ /*non-chrome*/ else                                                                           
                 {
                     if (!(string.IsNullOrEmpty(prevTitle) || string.IsNullOrEmpty(prevPs)))     //prevent empty entry being inserted into listview
                     {
-                        
+
                         if (!prevTitle.Equals(ProcessInfo.getForegroundWinTitle()))
                         {
-                            //stop timer
                             ts = stopwatch.Elapsed;
 
-                            //new objects of Event and EntryIdTime for dictionary
-                            Event e = new Event();
-                            EntryIdTime idt = new EntryIdTime("", ts);
-
-                            //set title and process
-                            e.winTitle = prevTitle;
-                            if (prevPs.Equals("chrome"))        //in case of user switching focus too fast between chrome and other applications
-                                e.url = prevUrl;
-                            else
-                                e.url = "";
-                            e.process = prevPs;
-
-                            //insert events into dictionary, similar events will be updated with new TimeSpan ts
-                            dictionaryInsert(e, idt);
-
-                            //restart timer
-                            stopwatch.Restart();                 
+                            //insert event into dictionary (association will be performed in there)
+                            dictionaryInsert();
+                            
+                            stopwatch.Restart();
                         }
                     }
                     prevTitle = ProcessInfo.getForegroundWinTitle();
-                    prevPs = ProcessInfo.getForegroundProcName();
+                    prevPs = ProcessInfo.getForegroundProcName().ToLower();
                     prevUrl = "";
 
                     label1.Text = prevTitle;
-                    label2.Text = prevPs; 
+                    label2.Text = prevPs;
                     label4.Text = prevUrl;
                     label8.Text = "";
                 }//end non-chrome
@@ -231,11 +215,16 @@ namespace WindowsFormsApp2
         //thread to post
         public void startPosting()
         {
-            DateTime start = DateTime.Today.AddHours(5.0);      //adds 5 hours for central time
+            //wait for project selection before starting
+            startPostingMutex.WaitOne(-1, false);                                
+
+            DateTime start = DateTime.Today.AddHours(6.0);      //adds 5 hours for central time
             DateTime end;
-            
+
             string description = string.Empty;
             string entryId = string.Empty;
+            string value = string.Empty;                        //either process name or URL
+            string taskId = string.Empty;
 
             while (true)
             {
@@ -249,95 +238,147 @@ namespace WindowsFormsApp2
 
                 try
                 {
-                    foreach (var x in dictionaryEvents)
+                    foreach (var x in Global.dictionaryEvents)
                     {
-                        if (x.Value.id.Equals(""))                  //POST, empty ID means this event hasn't been posted
+                        //undefined events (events with empty task ID) will not be uploaded
+                        if (x.Value.taskId.Equals(""))
+                            continue;
+
+                        if (x.Value.entryId.Equals(""))                         //POST, empty ID means this event hasn't been posted
                         {
                             if (x.Key.process.Equals("chrome"))
-                                description = x.Key.winTitle + " - " + x.Key.url + " " + "(" + x.Key.process + ")";
+                            {
+                                description = x.Key.url;
+                                value = x.Key.url;
+                                taskId = x.Value.taskId;
+                            }
+
                             else
-                                description = x.Key.winTitle + " " + "(" + x.Key.process + ")";
+                            {
+                                description = x.Key.process;
+                                value = x.Key.process;
+                                taskId = x.Value.taskId;
+                            }
 
-                            end = DateTime.Parse(x.Value.ts.ToString()).AddHours(5.0);
 
-                            dynamic res = POSTJSON(start, end, description, "", httpVerb.POST);
-                            dictionaryEvents[x.Key].id = res.id;    //update dictionary value to include entry ID returned from clockify
+                            end = DateTime.Parse(x.Value.ts.ToString()).AddHours(6.0);
+
+                            dynamic res = API.AddTimeEntry(start, end, description, Global.workspaceId, Global.projectId, taskId);
+
+                            Global.dictionaryEvents[x.Key].entryId = res.id;    //update dictionary value to include entry ID returned from clockify
                         }
-                        else                                        //PUT
+                        else                                                    //PUT   
                         {
                             if (x.Key.process.Equals("chrome"))
-                                description = x.Key.winTitle + " - " + x.Key.url + " " + "(" + x.Key.process + ")";
+                            {
+                                description = x.Key.url;
+                                value = x.Key.url;
+                                taskId = x.Value.taskId;
+                            }
                             else
-                                description = x.Key.winTitle + " " + "(" + x.Key.process + ")";
+                            {
+                                description = x.Key.process;
+                                value = x.Key.process;
+                                taskId = x.Value.taskId;
+                            }
 
-                            entryId = x.Value.id;
-                            end = DateTime.Parse(x.Value.ts.ToString()).AddHours(5.0);
+                            entryId = x.Value.entryId;
+                            end = DateTime.Parse(x.Value.ts.ToString()).AddHours(6.0);
 
-                            POSTJSON(start, end, description, entryId, httpVerb.PUT);
+                            API.UpdateTimeEntry(start, end, description, entryId, Global.workspaceId, Global.projectId, taskId);
                         }
                     }//end foreach
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString());
+                    MessageBox.Show("POSTING - " + ex.ToString());
                 }
                 myMutex.ReleaseMutex();
 
             }//end while
         }//end posting thread
 
-        public dynamic POSTJSON(DateTime start,DateTime end, string description, string entryId, httpVerb verb)
+        //associate event to task ID and names for 'dictionaryEvent'
+        public List<dynamic> associateForDictionaryEvents()
         {
-            Rest Client2 = new Rest();
-            Client2.httpMethod = verb;
-            Client2.Token = TOK;
-            
-            if (verb.Equals("POST")) 
-                Client2.endpoint = "https://api.clockify.me/api/workspaces/5badbd30b079875917cd57ca/timeEntries/";
+            Event e = new Event();
+            EventValues idt = new EventValues();
+            List<dynamic> associatedSet = new List<dynamic>();
+
+            e.winTitle = prevTitle;
+            if (prevPs.Equals("chrome"))        //in case of user switching focus too fast between chrome and other applications
+                e.url = prevUrl;
             else
-                Client2.endpoint = "https://api.clockify.me/api/workspaces/5badbd30b079875917cd57ca/timeEntries/" + entryId;
+                e.url = "";
+            e.process = prevPs;
 
-            JSONTIMEENTRY TimeEntry = new JSONTIMEENTRY()
+            idt.entryId = "";
+            idt.ts = ts;
+
+            //associate task by URL or process name based on if URL is empty
+            try
             {
-                billable = "true",
-                start = start.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z",
-                description = description,
-                projectId = "5bbe5e43b079870146fc4137",//architecture
-                taskId = "5bbe5ffbb079870146fc44d3",
-                end = end.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z"
-            };
-            
-            //TimeEntry.tagIds = new string[1];
-            var json = new JavaScriptSerializer().Serialize(TimeEntry);
-            Client2.body = json;
-
-            string Response = Client2.MakeRequest();
-            
-            return JsonConvert.DeserializeObject(Response);                     //returns a deserialized response object
-        }
-
-        public void dictionaryInsert(Event e, EntryIdTime idt)
-        {
-            myMutex.WaitOne();
-            if (dictionaryEvents.ContainsKey(e))                                //if an event is already in the table, update timespan
-                dictionaryEvents[e].ts = dictionaryEvents[e].ts + ts;
-            else
-            {
-                if (!filter(e))
+                if (!e.url.Equals(""))                                          //empty, it's a chrome event
                 {
-                    myMutex.ReleaseMutex();
-                    return;
+                    idt.taskId = Global.associations[prevUrl].id;
+                    idt.taskName = Global.associations[prevUrl].name;
                 }
 
-                dictionaryEvents.Add(e, idt);
+                else                                                            //not empty, it's a nonchrome event
+                {
+                    idt.taskId = Global.associations[prevPs].id;
+                    idt.taskName = Global.associations[prevPs].name;
+                }
             }
-                    
-            
+            catch
+            {
+                idt.taskId = "";
+                idt.taskName = "Undefined";
+            }
+
+           
+            associatedSet.Add(e);
+            associatedSet.Add(idt);
+
+            return associatedSet;
+        }//end associateDictionary
+
+        //insert events into dictionary
+        public void dictionaryInsert()
+        {
+            myMutex.WaitOne();
+
+            //perform association
+            List<dynamic> associatedSet = associateForDictionaryEvents();
+
+            Event e = associatedSet[0];                     //key
+            EventValues idt = associatedSet[1];             //value
+
+            try
+            {
+                if (Global.dictionaryEvents.ContainsKey(e))                                //if an event is already in the table, update timespan
+                    Global.dictionaryEvents[e].ts = Global.dictionaryEvents[e].ts + ts;
+                else
+                {
+                    if (!filter(e))
+                    {
+                        myMutex.ReleaseMutex();
+                        return;
+                    }
+                    Global.dictionaryEvents.Add(e, idt);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+
             //clear and post all onto listview1
             listView1.Items.Clear();
             string elapsedTime;
             listView1.BeginUpdate();
-            foreach (var x in dictionaryEvents)                               
+            foreach (var x in Global.dictionaryEvents)
             {
                 elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", x.Value.ts.Hours, x.Value.ts.Minutes, x.Value.ts.Seconds);
                 ListViewItem lv = new ListViewItem(x.Key.winTitle);
@@ -345,31 +386,28 @@ namespace WindowsFormsApp2
                 lv.SubItems.Add(x.Key.url);
                 lv.SubItems.Add(x.Key.process);
                 lv.SubItems.Add(elapsedTime);
+                lv.SubItems.Add(x.Value.taskName);
                 listView1.Items.Add(lv);
             }
             listView1.EndUpdate();
             listView1.Items[listView1.Items.Count - 1].EnsureVisible();
             myMutex.ReleaseMutex();
-        }
+        }//end dictionaryInsert
 
+        //filters url and process names
         public bool filter(Event e)                                           //returns true if entry is good for insert 
         {
-            string pattern = @"^(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/|www\.)";       //starts with these
+            string pattern = @"\.(com|net|edu|org)$";       //dot anything is assumed to be an url
 
             Match match = Regex.Match(e.winTitle, pattern);
 
-            //MessageBox.Show(match.Value);
-            
-
             if (match.Success)                                                  //if winTitle is an url
             {
-                MessageBox.Show(match.Value);
+                //MessageBox.Show(match.Value);
                 return false;
             }
-                
             else if (e.process.Equals("chrome"))
             {
-                //MessageBox.Show("Here2");
                 if (e.winTitle.Equals("Untitled - Google Chrome") ||
                     e.winTitle.Equals("New Tab - Google Chrome") ||
                     e.winTitle.Equals("Downloads - Google Chrome") ||
@@ -382,11 +420,14 @@ namespace WindowsFormsApp2
             }
             else if (e.process.Equals("explorer"))
             {
-                if (e.winTitle.Equals("Program Manager"))
+                if (e.winTitle.Equals("Program Manager") ||
+                    e.winTitle.Equals("File Explorer") ||
+                    e.winTitle.Equals("")
+                    )
                 {
                     return false;
                 }
-                    
+
             }
             else if (e.process.Equals("idle") ||
                      e.process.Equals("ShellExperienceHost") ||
@@ -394,15 +435,132 @@ namespace WindowsFormsApp2
                      e.winTitle.Equals("")
                 )
             {
-                //MessageBox.Show("Here3");
                 return false;
             }
 
-                
-
             return true;
+        }//end filter
+
+        //start association from scratch, clears out all current dictionaries
+        public void associateRaw()
+        {
+            listView1.Items.Clear();
+            string prevTitle = string.Empty;
+            string prevPs = string.Empty;
+            string prevUrl = string.Empty;
+
+            Global.dictionaryEvents.Clear();
+            Global.associations.Clear();
+
+            //binds task ID and name together, must be done before calling 'loadAssociation' since Association object needed to lookup task name by task ID
+            bindTaskIdName();                       
+
+            //load and associate value->taskId using SQL
+            List<Association> processes = SQL.loadAssociations(1);
+            List<Association> URLs = SQL.loadAssociations(2);
+
+            //adds event->task association
+            foreach (Association ps in processes)
+            {
+                Dto.TaskDto t = new Dto.TaskDto() { id = ps.taskId, name = ps.taskName };
+
+                Global.associations.Add(ps.value, t);       
+            }
+
+            //adds event->task association
+            foreach (Association url in URLs)
+            {
+                Dto.TaskDto t = new Dto.TaskDto() { id = url.taskId, name = url.taskName };
+
+                Global.associations.Add(url.value, t);      
+            }
+
         }
 
+        //binds task ID and name together
+        private void bindTaskIdName()
+        {
+            Global.taskIdName.Clear();
+
+            List<Dto.TaskDto> tasks = API.getTasksByProjectId(Global.workspaceId, Global.projectId);
+            foreach (Dto.TaskDto t in tasks)
+            {
+                Global.taskIdName.Add(t.id, t.name);
+            }
+        }
+
+        //associations (Form 4)
+        private void button1_Click(object sender, EventArgs e)      
+        {
+            myMutex.WaitOne();                      //prevent inserting into dictionary while making association changes
+
+            Form4 f = new Form4();
+            f.ShowDialog();
+
+            if (Global.chosen == 1 )
+            {
+                associateRaw();
+                Global.chosen = 0;
+            }
+
+            myMutex.ReleaseMutex();
+        }
+
+        //projects (Form 3)
+        private void button2_Click(object sender, EventArgs e)      
+        {
+            myMutex.WaitOne();                      //prevent inserting into dictionary while making association changes
+
+            Form3 f = new Form3();
+            f.ShowDialog();
+
+            if (Global.chosen == 1)
+            {
+                label9.Text = Global.projectName;
+                label13.Text = Global.workspaceName;
+
+                associateRaw();
+
+                try { startPollingMutex.ReleaseMutex(); } catch { }
+                try { startPostingMutex.ReleaseMutex(); } catch { }
+
+                Global.chosen = 0;
+            }
+
+            myMutex.ReleaseMutex();
+        }
+
+        //delete time entries of a workspace
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (Global.workspaceId.Equals(string.Empty))
+            {
+                MessageBox.Show("Session is not running, choose a workspace/project first.");
+                return;
+            }
+                
+
+            myMutex.WaitOne();
+
+            //reset environment
+            associateRaw();
+
+            List<Dto.TimeEntryFullDto> entries = API.FindTimeEntriesByWorkspace(Global.workspaceId);
+
+            foreach(Dto.TimeEntryFullDto entry in entries)
+            {
+                API.DeleteTimeEntry(Global.workspaceId, entry.id);
+            }
+
+            myMutex.ReleaseMutex();
+
+        }
+
+        //thread to get chrome Url
+        public void getChromeUrl()
+        {
+            prevUrl = GetUrl.chrome();
+        }
 
 
         private void label1_Click(object sender, EventArgs e)
@@ -440,5 +598,17 @@ namespace WindowsFormsApp2
         {
 
         }
+        
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label13_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
     }
 }
