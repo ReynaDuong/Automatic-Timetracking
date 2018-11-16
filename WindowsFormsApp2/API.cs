@@ -53,8 +53,7 @@ namespace WindowsFormsApp2
                 taskId = taskId,
                 end = end.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z"
             };
-
-            //MessageBox.Show("BEFORE REQUEST - " + projectId + " " + taskId);
+            
             client.body = new JavaScriptSerializer().Serialize(dto);
             string Response = client.MakeRequest();
 

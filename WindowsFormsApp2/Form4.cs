@@ -32,7 +32,6 @@ namespace WindowsFormsApp2
             this.MaximizeBox = true;
             this.MinimizeBox = true;
             this.Activate();
-            this.CenterToParent();
 
             buttonToggle("off");
 
@@ -94,6 +93,7 @@ namespace WindowsFormsApp2
                 workspaceName = treeView1.SelectedNode.Parent.Parent.Text;
                 projectName = treeView1.SelectedNode.Parent.Text;
                 taskName = treeView1.SelectedNode.Text;
+
 
                 loadListboxes();
                 buttonToggle("on");
@@ -209,7 +209,6 @@ namespace WindowsFormsApp2
         //textbox for new process
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
-
             if (e.KeyCode == Keys.Enter)
             {
                 button1.PerformClick();
@@ -251,8 +250,6 @@ namespace WindowsFormsApp2
                 textBox2.Enabled = false;
             }
         }
-
-
 
         private void Form4_Load(object sender, EventArgs e)
         {

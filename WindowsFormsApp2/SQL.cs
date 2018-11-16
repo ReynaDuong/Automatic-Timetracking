@@ -191,7 +191,11 @@ namespace WindowsFormsApp2
             reader.Read();                                      //read next (only has one element for this query)
 
             if (reader[0].ToString().Equals("1"))
+            {
+                dbConn.Close();
                 return true;
+            }
+                
 
             dbConn.Close();
             return false; ;

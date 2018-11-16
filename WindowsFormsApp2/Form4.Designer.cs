@@ -175,9 +175,9 @@
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(15, 305);
+            this.button5.Location = new System.Drawing.Point(12, 304);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(158, 23);
+            this.button5.Size = new System.Drawing.Size(161, 23);
             this.button5.TabIndex = 14;
             this.button5.Text = "Apply Associations to Session";
             this.button5.UseVisualStyleBackColor = true;

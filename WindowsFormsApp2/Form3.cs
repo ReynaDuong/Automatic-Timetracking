@@ -22,7 +22,6 @@ namespace WindowsFormsApp2
             this.MaximizeBox = true;
             this.MinimizeBox = true;
             this.Activate();
-            this.CenterToParent();
 
             button2.Enabled = false;
 

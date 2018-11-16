@@ -80,12 +80,14 @@ namespace WindowsFormsApp2
                 count = 12;
             else if (url.StartsWith("https://"))
                 count = 8;
-            
+
             else if (url.StartsWith("http://www."))
                 count = 11;
-            
+
             else if (url.StartsWith("http://"))
                 count = 7;
+            else if (url.StartsWith("www."))
+                count = 4;
             
 
             trimmed = url.Remove(0, count);

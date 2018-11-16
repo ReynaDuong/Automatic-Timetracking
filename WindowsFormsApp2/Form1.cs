@@ -445,13 +445,16 @@ namespace WindowsFormsApp2
         //start association from scratch, clears out all current dictionaries
         public void associateRaw()
         {
+            stopwatch.Restart();
             listView1.Items.Clear();
+
             string prevTitle = string.Empty;
             string prevPs = string.Empty;
             string prevUrl = string.Empty;
 
             Global.dictionaryEvents.Clear();
             Global.associations.Clear();
+            Global.definedTasks.Clear();
 
             //binds task ID and name together, must be done before calling 'loadAssociation' since Association object needed to lookup task name by task ID
             bindTaskIdName();                       
@@ -476,6 +479,8 @@ namespace WindowsFormsApp2
                 Global.associations.Add(url.value, t);      
             }
 
+            setDefinedTasks();
+
         }
 
         //binds task ID and name together
@@ -490,13 +495,28 @@ namespace WindowsFormsApp2
             }
         }
 
+        //stores tasks that are defined by user with an event
+        private void setDefinedTasks()
+        {
+            string name = string.Empty;
+
+            foreach (KeyValuePair<string, Dto.TaskDto> t in Global.associations)
+            {
+                name = t.Value.name;
+
+                if (!Global.definedTasks.Contains(name))
+                    Global.definedTasks.Add(name);
+            }
+        }
+
         //associations (Form 4)
         private void button1_Click(object sender, EventArgs e)      
         {
             myMutex.WaitOne();                      //prevent inserting into dictionary while making association changes
 
             Form4 f = new Form4();
-            f.ShowDialog();
+            f.StartPosition = FormStartPosition.CenterParent;
+            f.ShowDialog(this);
 
             if (Global.chosen == 1 )
             {
@@ -513,7 +533,8 @@ namespace WindowsFormsApp2
             myMutex.WaitOne();                      //prevent inserting into dictionary while making association changes
 
             Form3 f = new Form3();
-            f.ShowDialog();
+            f.StartPosition = FormStartPosition.CenterParent;
+            f.ShowDialog(this);
 
             if (Global.chosen == 1)
             {
@@ -540,21 +561,17 @@ namespace WindowsFormsApp2
                 return;
             }
                 
-
             myMutex.WaitOne();
-
-            //reset environment
+            
             associateRaw();
 
             List<Dto.TimeEntryFullDto> entries = API.FindTimeEntriesByWorkspace(Global.workspaceId);
-
             foreach(Dto.TimeEntryFullDto entry in entries)
             {
                 API.DeleteTimeEntry(Global.workspaceId, entry.id);
             }
 
             myMutex.ReleaseMutex();
-
         }
 
         //thread to get chrome Url

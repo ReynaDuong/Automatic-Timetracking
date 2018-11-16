@@ -37,8 +37,8 @@ namespace WindowsFormsApp2
         {
             //string userName = textBox1.Text.Trim();
             //string passWord = textBox2.Text.Trim();
-            //string userName = "lyw81718@gmail.com";
-            string userName = "xxlap1xx@yahoo.com";
+            string userName = "lyw81718@gmail.com";
+            //string userName = "xxlap1xx@yahoo.com";
             string passWord = "123456";
 
             try
@@ -74,6 +74,11 @@ namespace WindowsFormsApp2
         {
             this.ActiveControl = textBox1;
             this.CenterToScreen();
+        }
+
+        private void textBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+
         }
     }
 }
