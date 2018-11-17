@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("");
             this.label1 = new System.Windows.Forms.Label();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -51,6 +51,7 @@
             this.button3 = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // label1
@@ -70,14 +71,15 @@
             this.columnHeader2,
             this.columnHeader3,
             this.columnHeader4,
-            this.columnHeader5});
+            this.columnHeader5,
+            this.columnHeader6});
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1});
-            this.listView1.Location = new System.Drawing.Point(12, 215);
+            listViewItem3});
+            this.listView1.Location = new System.Drawing.Point(11, 215);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(596, 299);
+            this.listView1.Size = new System.Drawing.Size(597, 299);
             this.listView1.TabIndex = 1;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -85,27 +87,27 @@
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "Title";
-            this.columnHeader1.Width = 185;
+            this.columnHeader1.Text = "Process";
+            this.columnHeader1.Width = 140;
             // 
             // columnHeader2
             // 
             this.columnHeader2.Text = "URL";
-            this.columnHeader2.Width = 131;
+            this.columnHeader2.Width = 142;
             // 
             // columnHeader3
             // 
-            this.columnHeader3.Text = "Process";
-            this.columnHeader3.Width = 121;
+            this.columnHeader3.Text = "Duration";
             // 
             // columnHeader4
             // 
-            this.columnHeader4.Text = "Duration";
+            this.columnHeader4.Text = "Idled";
+            this.columnHeader4.Width = 56;
             // 
             // columnHeader5
             // 
             this.columnHeader5.Text = "Task";
-            this.columnHeader5.Width = 95;
+            this.columnHeader5.Width = 132;
             // 
             // label2
             // 
@@ -260,11 +262,16 @@
             this.label13.TabIndex = 15;
             this.label13.Text = "None selected";
             // 
+            // columnHeader6
+            // 
+            this.columnHeader6.Text = "Active";
+            this.columnHeader6.Width = 59;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(618, 526);
+            this.ClientSize = new System.Drawing.Size(619, 526);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.button3);
@@ -315,6 +322,7 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.ColumnHeader columnHeader6;
     }
 }
 

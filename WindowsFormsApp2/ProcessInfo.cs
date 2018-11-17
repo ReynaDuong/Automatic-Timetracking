@@ -22,6 +22,30 @@ namespace WindowsFormsApp2
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
+        //requirement for retreiving the last input tick
+        [DllImport("User32.dll")]
+        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+
+        internal struct LASTINPUTINFO
+        {
+            public uint cbSize;
+            public uint dwTime;
+        }
+
+        //get last tick count
+        public static uint getLastTick()
+        {
+            LASTINPUTINFO lastInput = new LASTINPUTINFO();
+
+            lastInput.cbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf(lastInput);
+            lastInput.dwTime = 0;
+
+            if (GetLastInputInfo(ref lastInput))      //if succeed, return last input tick count
+                return lastInput.dwTime;
+
+            return 0;
+        }
+
         //get current active window title
         static public string getForegroundWinTitle()
         {
@@ -35,8 +59,8 @@ namespace WindowsFormsApp2
             }
             return title;
         }
-
-        //
+        
+        //get process name
         static public string getForegroundProcName()
         {
             uint pid = 0;
@@ -47,6 +71,7 @@ namespace WindowsFormsApp2
             return p.ProcessName;
         }
 
+        //get process ID
         static public int getPid()
         {
             uint pid = 0;

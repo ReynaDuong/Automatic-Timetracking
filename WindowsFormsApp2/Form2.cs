@@ -35,11 +35,10 @@ namespace WindowsFormsApp2
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //string userName = textBox1.Text.Trim();
-            //string passWord = textBox2.Text.Trim();
-            string userName = "lyw81718@gmail.com";
-            //string userName = "xxlap1xx@yahoo.com";
-            string passWord = "123456";
+            string userName = textBox1.Text.Trim();
+            string passWord = textBox2.Text.Trim();
+            //string userName = "lyw81718@gmail.com";
+            //string passWord = "123456";
 
             try
             {
@@ -49,11 +48,10 @@ namespace WindowsFormsApp2
                Global.name = Response.name;
 
             }
-            catch(Exception ex)
+            catch
             {
-                //MessageBox.Show(ex.ToString());
-                MessageBox.Show("Most likely wrong username/password, exception will be handled soon. \n\nExiting...");
-                Application.Exit();
+                MessageBox.Show("Most likely wrong username/password, exception will be handled soon.");
+                return;
             }
 
 

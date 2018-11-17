@@ -74,15 +74,15 @@ namespace WindowsFormsApp2
         }
 
         //load process(1), or URL(2) association rules
-        public static List<Association> loadAssociations(int type)
+        public static List<Association> loadAssociations(int type, string projectId)
         {
             IntializeDB();
             string query = string.Empty;
 
             if (type == 1)
-                query = "SELECT * FROM Processes WHERE projectId = " + "'" + Global.projectId + "'";
+                query = "SELECT * FROM Processes WHERE projectId = " + "'" + projectId + "'";
             else if (type == 2)
-                query = "SELECT * FROM URLs WHERE projectId = " + "'" + Global.projectId + "'";
+                query = "SELECT * FROM URLs WHERE projectId = " + "'" + projectId + "'";
 
             MySqlCommand cmd = new MySqlCommand(query, dbConn);
 

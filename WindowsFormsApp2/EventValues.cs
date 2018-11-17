@@ -11,12 +11,9 @@ namespace WindowsFormsApp2
         public string entryId { get; set; }
         public string taskId { get; set; }
         public string taskName { get; set; }
-        public TimeSpan ts { get; set; }
 
-        //public EventValues(string id, TimeSpan ts)
-        //{
-        //    this.entryId = id;
-        //    this.ts = ts;
-        //}
+        public TimeSpan ts { get; set; }
+        public TimeSpan idle { get; set; }
+        public TimeSpan active { get; set; }
     }
 }

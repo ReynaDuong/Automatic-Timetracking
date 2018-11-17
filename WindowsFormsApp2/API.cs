@@ -129,7 +129,6 @@ namespace WindowsFormsApp2
             return;
         }
 
-
         //get all projects from workspace ID
         public static dynamic getProjectsByWorkspaceId(string workspaceId)
         {
