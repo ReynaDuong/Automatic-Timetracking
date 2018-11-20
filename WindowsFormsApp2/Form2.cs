@@ -37,8 +37,8 @@ namespace WindowsFormsApp2
         {
             string userName = textBox1.Text.Trim();
             string passWord = textBox2.Text.Trim();
-            //string userName = "lyw81718@gmail.com";
-            //string passWord = "123456";
+            //userName = "lyw81718@gmail.com";
+            //passWord = "123456";
 
             try
             {

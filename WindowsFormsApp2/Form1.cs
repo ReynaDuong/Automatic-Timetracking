@@ -21,7 +21,7 @@ namespace WindowsFormsApp2
 {
     public partial class Form1 : Form
     {
-        private const uint MIN_IDLE_SECONDS = 60;    //minimum seconds that trips the idle counter
+        private const uint MIN_IDLE_SECONDS = 3;    //minimum seconds that trips the idle counter
         
         uint idleSeconds = 0;
         string prevTitle = string.Empty;
@@ -36,6 +36,7 @@ namespace WindowsFormsApp2
 
         Mutex startPostingMutex = new Mutex();      //halt posting thread until project is selected
         Mutex startPollingMutex = new Mutex();      //halt polling thread until project is selected
+        Mutex startIdleMonMutex = new Mutex();      //halt idle monitoring thread until project is selected 
 
         Dictionary<string, string> winTitle2url = new Dictionary<string, string>();
 
@@ -55,12 +56,12 @@ namespace WindowsFormsApp2
             this.MinimizeBox = true;
             this.CenterToScreen();
             listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-            
+
 
             //wait until a project is selected
             startPollingMutex.WaitOne();
             startPostingMutex.WaitOne();
-
+            startIdleMonMutex.WaitOne();
 
             //polling thread
             System.Threading.Thread pollingThread;
@@ -310,16 +311,16 @@ namespace WindowsFormsApp2
             //associate task by URL or process name based on if URL is empty
             try
             {
-                if (!e.url.Equals(""))                                          //empty, it's a chrome event
-                {
-                    idt.taskId = Global.associations[prevUrl].id;
-                    idt.taskName = Global.associations[prevUrl].name;
-                }
-
-                else                                                            //not empty, it's a nonchrome event
+                if (e.url.Equals(""))                                          //empty, it's a non-chrome event
                 {
                     idt.taskId = Global.associations[prevPs].id;
                     idt.taskName = Global.associations[prevPs].name;
+                }
+
+                else                                                           //not empty, it's a chrome event
+                {
+                    idt.taskId = Global.associations[prevUrl].id;
+                    idt.taskName = Global.associations[prevUrl].name;
                 }
             }
             catch
@@ -353,9 +354,11 @@ namespace WindowsFormsApp2
                     Global.dictionaryEvents[e].ts = Global.dictionaryEvents[e].ts + ts;
 
                     if (idleSeconds > MIN_IDLE_SECONDS)
-                        Global.dictionaryEvents[e].idle = Global.dictionaryEvents[e].idle + TimeSpan.FromSeconds(idleSeconds); ;
-
+                        Global.dictionaryEvents[e].idle = Global.dictionaryEvents[e].idle + TimeSpan.FromSeconds(idleSeconds);
+                    
                     Global.dictionaryEvents[e].active = Global.dictionaryEvents[e].ts - Global.dictionaryEvents[e].idle;
+
+                    listViewUpdate(0, e, idt);
                 }
                 else
                 {
@@ -365,6 +368,8 @@ namespace WindowsFormsApp2
                         return;
                     }
                     Global.dictionaryEvents.Add(e, idt);
+
+                    listViewUpdate(1, e, idt);
                 }
             }
             catch (Exception ex)
@@ -372,81 +377,28 @@ namespace WindowsFormsApp2
                 MessageBox.Show(ex.ToString());
             }
 
-            if (idleSeconds > MIN_IDLE_SECONDS)     //idleSeonds has been consumed, restting it to 0
+            //idleSeonds has been consumed, restting it to 0
+            if (idleSeconds > MIN_IDLE_SECONDS)
             {
                 idleMonitorMutex.WaitOne();
                 idleSeconds = 0;
+                label14.Text = idleSeconds.ToString();
                 idleMonitorMutex.ReleaseMutex();
             }
 
-            //clear and post all onto listview1
-
-            /***OLD LIST RESERVED***
-            listView1.Items.Clear();
-            string elapsedTime;
-            string idledTime;
-            listView1.BeginUpdate();
-            foreach (var x in Global.dictionaryEvents)
-            {
-                elapsedTime = string.Format("{0:00}:{1:00}:{2:00}", x.Value.ts.Hours, x.Value.ts.Minutes, x.Value.ts.Seconds);
-                idledTime = string.Format("{0:00}:{1:00}:{2:00}", x.Value.idle.Hours, x.Value.idle.Minutes, x.Value.idle.Seconds);
-
-                ListViewItem lv = new ListViewItem(x.Key.winTitle);
-
-                lv.SubItems.Add(x.Key.url);
-                lv.SubItems.Add(x.Key.process);
-                lv.SubItems.Add(elapsedTime);
-                lv.SubItems.Add(x.Value.taskName);
-                lv.SubItems.Add(idledTime);
-                listView1.Items.Add(lv);
-            }
-            listView1.EndUpdate();
-            listView1.Items[listView1.Items.Count - 1].EnsureVisible();
             myMutex.ReleaseMutex();
-            */
-
-            string elapsedTime;
-            string idledTime;
-            string activeTime;
-
-            listView1.Items.Clear();
-            listView1.BeginUpdate();
-
-            foreach (var x in Global.dictionaryEvents)
-            {
-                elapsedTime = string.Format("{0:00}:{1:00}:{2:00}", x.Value.ts.Hours, x.Value.ts.Minutes, x.Value.ts.Seconds);
-                idledTime = string.Format("{0:00}:{1:00}:{2:00}", x.Value.idle.Hours, x.Value.idle.Minutes, x.Value.idle.Seconds);
-                activeTime = string.Format("{0:00}:{1:00}:{2:00}", x.Value.active.Hours, x.Value.active.Minutes, x.Value.active.Seconds);
-
-                ListViewItem lv = new ListViewItem(x.Key.process);
-
-                lv.SubItems.Add(x.Key.url);
-                lv.SubItems.Add(elapsedTime);
-                lv.SubItems.Add(idledTime);
-                lv.SubItems.Add(x.Value.taskName);
-                lv.SubItems.Add(activeTime);
-                listView1.Items.Add(lv);
-            }
-
-            listView1.EndUpdate();
-            listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-            myMutex.ReleaseMutex();
-            
-
         }//end dictionaryInsert
 
-        //filters url and process names
-        public bool filter(Event e)                                           //returns true if entry is good for insert 
+        //filters url and process names, returns true if entry is good for insert 
+        public bool filter(Event e)                                           
         {
-            string pattern = @"\.(com|net|edu|org)$";       //dot anything is assumed to be an url
+            string pattern = @"\.(com|net|edu|org)$";
 
             Match match = Regex.Match(e.winTitle, pattern);
 
             if (match.Success)                                                  //if winTitle is an url
-            {
-                //MessageBox.Show(match.Value);
                 return false;
-            }
+
             else if (e.process.Equals("chrome"))
             {
                 if (e.winTitle.Equals("Untitled - Google Chrome") ||
@@ -585,6 +537,7 @@ namespace WindowsFormsApp2
 
                 try { startPollingMutex.ReleaseMutex(); } catch { }
                 try { startPostingMutex.ReleaseMutex(); } catch { }
+                try { startIdleMonMutex.ReleaseMutex(); } catch { }
 
                 Global.chosen = 0;
             }
@@ -617,6 +570,7 @@ namespace WindowsFormsApp2
         //thread to monitor idle
         private void startIdleMonitoring()
         {
+            startIdleMonMutex.WaitOne();
             uint currentTick = 0;
             uint lastTick = 0;
             uint seconds = 0;
@@ -634,11 +588,48 @@ namespace WindowsFormsApp2
                 {
                     idleMonitorMutex.WaitOne();
 
-                    idleSeconds = seconds;
+                    if (idleSeconds == 0)
+                        idleSeconds = seconds;
+                    else
+                        idleSeconds++;
+
+                    label14.Text = idleSeconds.ToString();
                     
                     idleMonitorMutex.ReleaseMutex();
                 }
             }
+        }
+
+        //update listView
+        private void listViewUpdate(int newItem, Event e, EventValues idt)
+        {
+            listView1.BeginUpdate();
+
+            string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}", Global.dictionaryEvents[e].ts.Hours, Global.dictionaryEvents[e].ts.Minutes, Global.dictionaryEvents[e].ts.Seconds);
+            string idledTime = string.Format("{0:00}:{1:00}:{2:00}", Global.dictionaryEvents[e].idle.Hours, Global.dictionaryEvents[e].idle.Minutes, Global.dictionaryEvents[e].idle.Seconds);
+            string activeTime = string.Format("{0:00}:{1:00}:{2:00}", Global.dictionaryEvents[e].active.Hours, Global.dictionaryEvents[e].active.Minutes, Global.dictionaryEvents[e].active.Seconds);
+
+            ListViewItem lv = new ListViewItem(e.process);
+            lv.SubItems.Add(e.url);
+            lv.SubItems.Add(elapsedTime);
+            lv.SubItems.Add(idledTime);
+            lv.SubItems.Add(idt.taskName);
+            lv.SubItems.Add(activeTime);
+
+            if (newItem == 1)                                   //add list item
+            {
+                listView1.Items.Add(lv);
+                Global.dictionaryEvents[e].listId = listView1.Items.IndexOf(lv);
+            }
+            else                                                //update list item
+            {
+                listView1.Items[Global.dictionaryEvents[e].listId].SubItems[2].Text = elapsedTime;
+                listView1.Items[Global.dictionaryEvents[e].listId].SubItems[3].Text = idledTime;
+                listView1.Items[Global.dictionaryEvents[e].listId].SubItems[5].Text = activeTime;
+            }
+
+            //listView1.Items[listView1.Items.Count - 1].EnsureVisible();
+            listView1.EndUpdate();
         }
 
         //thread to get chrome Url

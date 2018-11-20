@@ -11,6 +11,7 @@ namespace WindowsFormsApp2
         public string entryId { get; set; }
         public string taskId { get; set; }
         public string taskName { get; set; }
+        public int listId { get; set; }
 
         public TimeSpan ts { get; set; }
         public TimeSpan idle { get; set; }
