@@ -249,7 +249,7 @@ namespace WindowsFormsApp2
                             }
 
 
-                            end = DateTime.Parse(x.Value.ts.ToString()).AddHours(6.0);
+                            end = DateTime.Parse(x.Value.active.ToString()).AddHours(6.0);
 
                             dynamic res = API.AddTimeEntry(start, end, description, Global.workspaceId, Global.projectId, taskId);
 
@@ -271,7 +271,7 @@ namespace WindowsFormsApp2
                             }
 
                             entryId = x.Value.entryId;
-                            end = DateTime.Parse(x.Value.ts.ToString()).AddHours(6.0);
+                            end = DateTime.Parse(x.Value.active.ToString()).AddHours(6.0);
 
                             API.UpdateTimeEntry(start, end, description, entryId, Global.workspaceId, Global.projectId, taskId);
                         }
