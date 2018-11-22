@@ -105,8 +105,6 @@ namespace WindowsFormsApp2
                 listBox2.Items.Clear();
             }
                 
-            
-
             return;
         }
 

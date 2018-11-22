@@ -24,6 +24,8 @@ namespace WindowsFormsApp2
         private const uint MIN_IDLE_SECONDS = 3;    //minimum seconds that trips the idle counter
         
         uint idleSeconds = 0;
+        int idleStatus = 0;
+
         string prevTitle = string.Empty;
         string prevPs = string.Empty;
         string prevUrl = string.Empty;
@@ -55,8 +57,6 @@ namespace WindowsFormsApp2
             this.MaximizeBox = true;
             this.MinimizeBox = true;
             this.CenterToScreen();
-            listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-
 
             //wait until a project is selected
             startPollingMutex.WaitOne();
@@ -282,7 +282,6 @@ namespace WindowsFormsApp2
                     MessageBox.Show("POSTING - " + ex.ToString());
                 }
                 myMutex.ReleaseMutex();
-
             }//end while
         }//end posting thread
 
@@ -570,7 +569,7 @@ namespace WindowsFormsApp2
         //thread to monitor idle
         private void startIdleMonitoring()
         {
-            startIdleMonMutex.WaitOne();
+            startIdleMonMutex.WaitOne(-1, false);
             uint currentTick = 0;
             uint lastTick = 0;
             uint seconds = 0;
@@ -584,19 +583,29 @@ namespace WindowsFormsApp2
 
                 seconds = (currentTick - lastTick) / 1000;             //convert to seconds
 
-                if (seconds > MIN_IDLE_SECONDS)
+                if (seconds >= MIN_IDLE_SECONDS)
                 {
                     idleMonitorMutex.WaitOne();
 
-                    if (idleSeconds == 0)
+                    if (idleSeconds == 0 && idleStatus == 0)
+                    {
                         idleSeconds = seconds;
-                    else
+                        idleStatus = 1;
+                    }
+                    else if (idleStatus == 0)
+                    {
+                        idleSeconds += seconds;
+                        idleStatus = 1;
+                    }
+                    else if (idleStatus == 1)
                         idleSeconds++;
 
                     label14.Text = idleSeconds.ToString();
-                    
+
                     idleMonitorMutex.ReleaseMutex();
                 }
+                else
+                    idleStatus = 0;
             }
         }
 
