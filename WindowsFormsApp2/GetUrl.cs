@@ -54,12 +54,11 @@ namespace WindowsFormsApp2
                                                   "(.*?)/";     //matches the rest until / is reached
 
                                 Match match = Regex.Match(url, pattern);
-
                                 if (match.Success)
                                     return trim(match.Value);
                             }
-                        }//end if length > 0
-                    }//end elmUrlBar != null
+                        }
+                    }
                 }//end for each loop
             }
             catch (Exception e)
@@ -67,6 +66,65 @@ namespace WindowsFormsApp2
                 MessageBox.Show(e.ToString());
             }
             return "";
+        }
+
+        public static string fromChromeTitle(string title)
+        {
+            Match match;
+            string pattern = @"\[(.*?)\]";
+
+            for (int i = 0; i < 30; i++)
+            {
+                System.Threading.Thread.Sleep(25);
+
+                if (!filter(title))
+                    return "/";
+
+                match = Regex.Match(title, pattern);
+
+                if (match.Success)
+                {
+                    title = trim2(match.Value);
+                    return title;
+                }
+                else if (!ProcessInfo.getForegroundProcName().Equals("chrome"))
+                    return "";
+                else
+                    title = ProcessInfo.getForegroundWinTitle();
+            }
+
+            return chrome();
+        }
+
+        private static bool filter(string title)
+        {
+            if (title.Equals("Untitled - Google Chrome") ||
+                title.Equals("New Tab - Google Chrome") ||
+                title.Equals("Downloads - Google Chrome") ||
+                title.Equals("Extensions - Google Chrome") ||
+                title.Equals("Settings - Google Chrome")
+             )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static string trim2(string url)
+        {
+            string trimmed = string.Empty;
+            int count = 0;
+
+            if (url.StartsWith("[www."))
+                count = 5;
+            else if (url.StartsWith("["))
+                count = 1;
+
+            trimmed = url.Remove(0, count);
+            trimmed = trimmed.Substring(0, trimmed.Length - 1);
+
+            return trimmed;
         }
 
         //remove http, https, etc..

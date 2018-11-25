@@ -31,6 +31,8 @@ namespace WindowsFormsApp2
             client.body = new JavaScriptSerializer().Serialize(dto);
             string Response = client.MakeRequest();
 
+            //MessageBox.Show(Response);
+
             return JsonConvert.DeserializeObject<Dto.AuthResponse>(Response);
         }
 
@@ -43,7 +45,7 @@ namespace WindowsFormsApp2
                 Token = Global.token,
                 endpoint = "https://api.clockify.me/api/workspaces/" + workspaceId + "/timeEntries/"
             };
-            
+
             Dto.JSONTIMEENTRY dto = new Dto.JSONTIMEENTRY()
             {
                 billable = "true",
@@ -53,11 +55,11 @@ namespace WindowsFormsApp2
                 taskId = taskId,
                 end = end.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z"
             };
-            
+
             client.body = new JavaScriptSerializer().Serialize(dto);
             string Response = client.MakeRequest();
 
-            
+
             try
             {
                 return JsonConvert.DeserializeObject(Response);                     //returns a deserialized response object
@@ -82,7 +84,7 @@ namespace WindowsFormsApp2
                 Token = Global.token,
                 endpoint = "https://api.clockify.me/api/workspaces/" + workspaceId + "/timeEntries/" + entryId
             };
-            
+
             Dto.JSONTIMEENTRY dto = new Dto.JSONTIMEENTRY()
             {
                 billable = "true",
@@ -92,7 +94,7 @@ namespace WindowsFormsApp2
                 taskId = taskId,
                 end = end.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "Z"
             };
-            
+
             client.body = new JavaScriptSerializer().Serialize(dto);
             string Response = client.MakeRequest();
 
@@ -106,10 +108,12 @@ namespace WindowsFormsApp2
             {
                 httpMethod = httpVerb.GET,
                 Token = Global.token,
-                endpoint = "https://api.clockify.me/api/workspaces/" + workspaceId + "/timeEntries/"
+                endpoint = "https://api.clockify.me/api/workspaces/" + workspaceId + "/timeEntries/?page=0"
             };
 
             string Response = client.MakeRequest();
+
+            //MessageBox.Show(Response);
 
             return JsonConvert.DeserializeObject<List<Dto.TimeEntryFullDto>>(Response);
         }
@@ -155,7 +159,7 @@ namespace WindowsFormsApp2
             };
 
             string Response = client.MakeRequest();
-            
+
             return JsonConvert.DeserializeObject<List<Dto.TaskDto>>(Response);
         }
 
@@ -174,7 +178,28 @@ namespace WindowsFormsApp2
             return JsonConvert.DeserializeObject<List<Dto.WorkspaceDto>>(Response);
         }
 
-        
+        //add task to project
+        public static dynamic addTaskByProjectId(string workspaceId, string projectId, string taskName)
+        {
+            Rest client = new Rest()
+            {
+                httpMethod = httpVerb.POST,
+                Token = Global.token,
+                endpoint = "https://api.clockify.me/api/workspaces/" + workspaceId + "/projects/" + projectId + "/tasks/"
+            };
+
+            Dto.TaskRequest dto = new Dto.TaskRequest()
+            {
+                name = taskName,
+                projectId = projectId
+            };
+
+            client.body = new JavaScriptSerializer().Serialize(dto);
+
+            string Response = client.MakeRequest();
+
+            return JsonConvert.DeserializeObject<Dto.TaskDto>(Response);                     //returns a deserialized response object
+        }
 
 
     }

@@ -60,7 +60,7 @@ namespace WindowsFormsApp2
         public class EstimateDto
         {
             public string estimate { get; set; }
-            public string type { get; set; }
+            public typeEnum type { get; set; }
         }
 
         public class JSONTIMEENTRY
@@ -74,9 +74,94 @@ namespace WindowsFormsApp2
             public string[] tagIds { get; set; }
         }
 
+        public class TaskRequest
+        {
+            public string id;
+            public string name;
+            public string projectId;
+            public string assigneeId;
+            public string estimate;
+            public string status;
+        }
+
         public class TimeEntryFullDto
         {
+            //public bool billable { get; set; }
+            public string description { get; set; }
+            //public HourlyRateDto hourlyRate { get; set; }
             public string id { get; set; }
+            //public bool isLocked { get; set; }
+            //public ProjectDtoImpl project { get; set; }
+            //public string projectId { get; set; }
+            //public TagDto[] tags { get; set; }
+            //public TaskDto tasks { get; set; }
+            //public TimeInvervalDto timeInterval { get; set; }
+            //public uint totalBillable { get; set; }
+            //public UserDto user { get; set; }
+            //public string workspaceId { get; set; }
+        }
+
+        public class ProjectDtoImpl
+        {
+            public bool archived { get; set; }
+            public bool billable { get; set; }
+            public string clientId { get; set; }
+            public string color { get; set; }
+            public EstimateDto estimate { get; set; }
+            public HourlyRateDto hourlyRate { get; set; }
+            public string id { get; set; }
+            public MembershipDto memberships { get; set; }
+            public string name { get; set; }
+            public bool @public { get; set; }
+            public string workspaceId { get; set; }
+        }
+
+        public class UserDto
+        {
+            public string activeWorkspace { get; set; }
+            public string defaultWorkspace { get; set; }
+            public string email { get; set; }
+            public string id { get; set; }
+            public MembershipDto[] memberships { get; set; }
+            public string name { get; set; }
+            public string profilePicture { get; set; }
+            public UserSettingsDto settings { get; set; }
+            public statusEnum status {get; set;}
+        }
+
+        public class SummaryReportSettingsDto
+        {
+            public string group { get; set; }
+            public string subgroup { get; set; }
+        }
+
+        public class UserSettingsDto
+        {
+            public string dateFormat { get; set; }
+            public string isCompactViewOn { get; set; }
+            public string longRunning { get; set; }
+            public string sendNewsletter { get; set; }
+            public SummaryReportSettingsDto summaryReportSettings { get; set; }
+            public string timeFormat { get; set; }
+            public string timeTrackingManual { get; set; }
+            public string timeZone { get; set; }
+            public weekEnum weekStart { get; set; }
+            public string weeklyUpdates { get; set; }
+        }
+
+
+        public class TagDto
+        {
+            public string id { get; set; }
+            public string name { get; set; }
+            public string workspaceId { get; set; }
+        }
+
+        public class TimeInvervalDto
+        {
+            public string duration { get; set; }
+            public string end { get; set; }
+            public string start { get; set; }
         }
 
         public class WorkspaceDto
@@ -130,15 +215,46 @@ namespace WindowsFormsApp2
             public string name { get; set; }
             public Boolean @new { get; set; }
             public string refreshToken { get; set; }
-            public stringEnum status { get; set; }
+            public statusEnum status { get; set; }
             public string token { get; set; }
         }
 
-        public enum stringEnum
+        public enum taskDtoEnum
+        {
+            ACTIVE,
+            DONE
+        }
+
+        public enum statusEnum
         {
             ACTIVE,
             PENDING_EMAIL_VERIFICATION,
             DELETED
+        }
+
+        public enum weekEnum
+        {
+            MONDAY,
+            TUESDAY,
+            WEDNESDAY,
+            THURSDAY,
+            FRIDAY,
+            SATURDAY,
+            SUNDAY
+        }
+
+        public enum typeEnum
+        {
+            AUTO,
+            MANUAL
+        }
+
+        public enum membershipEnum
+        {
+            PENDING,
+            ACTIVE,
+            DECLINED,
+            INACTIVE
         }
 
     }

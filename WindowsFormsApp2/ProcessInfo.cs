@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace WindowsFormsApp2
@@ -47,7 +48,7 @@ namespace WindowsFormsApp2
         }
 
         //get current active window title
-        static public string getForegroundWinTitle()
+        public static string getForegroundWinTitle()
         {
             string title = string.Empty;
             IntPtr handle = GetForegroundWindow();
@@ -61,8 +62,9 @@ namespace WindowsFormsApp2
         }
         
         //get process name
-        static public string getForegroundProcName()
+        public static  string getForegroundProcName()
         {
+
             uint pid = 0;
             IntPtr handle = GetForegroundWindow();
             GetWindowThreadProcessId(handle, out pid);
@@ -72,7 +74,7 @@ namespace WindowsFormsApp2
         }
 
         //get process ID
-        static public int getPid()
+        public static  int getPid()
         {
             uint pid = 0;
             IntPtr handle = GetForegroundWindow();

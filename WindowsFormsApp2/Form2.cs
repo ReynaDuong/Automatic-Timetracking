@@ -48,9 +48,10 @@ namespace WindowsFormsApp2
                Global.name = Response.name;
 
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Most likely wrong username/password, exception will be handled soon.");
+                //MessageBox.Show("Most likely wrong username/password, exception will be handled soon.");
+                MessageBox.Show(ex.ToString());
                 return;
             }
 

@@ -146,7 +146,7 @@ namespace WindowsFormsApp2
                 MessageBox.Show(ex.ToString());
             }
             
-            loadListboxes();
+            loadListboxes();    //reload associations
             textBox1.Clear();
             textBox1.Focus();
         }

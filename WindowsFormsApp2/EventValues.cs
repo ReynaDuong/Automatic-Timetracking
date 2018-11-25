@@ -16,5 +16,6 @@ namespace WindowsFormsApp2
         public TimeSpan ts { get; set; }
         public TimeSpan idle { get; set; }
         public TimeSpan active { get; set; }
+        public TimeSpan activeDelta { get; set; }
     }
 }

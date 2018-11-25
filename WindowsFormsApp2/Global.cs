@@ -20,8 +20,14 @@ namespace WindowsFormsApp2
 
         public static Dictionary<Event, EventValues> dictionaryEvents = new Dictionary<Event, EventValues>();   //user's live event->task association
         public static Dictionary<string, Dto.TaskDto> associations = new Dictionary<string, Dto.TaskDto>();     //all event->task association
-        public static Dictionary<string, string> taskIdName = new Dictionary<string, string>();                 //all taskId->taskName of a project
+        public static Dictionary<string, string> allTaskIdName = new Dictionary<string, string>();              //all taskId->taskName of a project
+        public static Dictionary<string, string> definedTaskIdName = new Dictionary<string, string>();          //defined taskId->taskName
+        public static Dictionary<string, TimeLogInfo> definedTaskIdTimeLogInfo= new Dictionary<string, TimeLogInfo>();       //defined taskId->timeLog (contains listID and active time)
 
-        public static List<string> definedTasks = new List<string>();                                           //tasks that has a definition of an event to it
+        public static TimeSpan activeTotal;
+
+        public static Dto.TaskDto miscellaneous;
+
+
     }
 }

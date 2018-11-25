@@ -92,15 +92,24 @@ namespace WindowsFormsApp2
             List<Association> rules = new List<Association>();
 
             //perform value->taskId association
-            while (reader.Read())
+            try
             {
-                Association r = new Association();
-                r.value = reader[0].ToString();
-                r.taskId = reader[1].ToString();
-                r.taskName = Global.taskIdName[r.taskId];       //lookup task name in global dictionary, which is defined before this routine is called
+                while (reader.Read())
+                {
+                    Association r = new Association();
+                    r.value = reader[0].ToString();
+                    r.taskId = reader[1].ToString();
 
-                rules.Add(r);
+                    r.taskName = Global.allTaskIdName[r.taskId];       //lookup task name in global dictionary, which is defined before this routine is called
+
+                    rules.Add(r);
+                }
             }
+            catch
+            {
+                MessageBox.Show("Error occurred in fetching task associations from database.");
+            }
+
 
             dbConn.Close();
             return rules;
