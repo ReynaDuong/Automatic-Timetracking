@@ -19,7 +19,7 @@ namespace WindowsFormsApp2
                 Username = UN,
                 Password = PW,
                 httpMethod = httpVerb.POST,
-                endpoint = "https://api.clockify.me/api/auth/token/"
+                endpoint = "https://api.clockify.me/api/auth/token"
             };
 
             Dto.AuthenticationRequest dto = new Dto.AuthenticationRequest()

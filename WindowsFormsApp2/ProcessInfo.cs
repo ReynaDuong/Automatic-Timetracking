@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Automation;
+using System.Windows.Forms;
 
 namespace WindowsFormsApp2
 {
@@ -21,7 +23,7 @@ namespace WindowsFormsApp2
 
         //requirement for retreiving PID from handle
         [DllImport("user32.dll", SetLastError = true)]
-        static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+        static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId); 
 
         //requirement for retreiving the last input tick
         [DllImport("User32.dll")]
@@ -48,39 +50,53 @@ namespace WindowsFormsApp2
         }
 
         //get current active window title
-        public static string getForegroundWinTitle()
+        public static string getWintitle(IntPtr handle)
         {
-            string title = string.Empty;
-            IntPtr handle = GetForegroundWindow();
             int titleLength = GetWindowTextLength(handle) + 1;
             StringBuilder sb = new StringBuilder(titleLength);
-            if (GetWindowText(handle, sb, titleLength) > 0)
-            {
-                title = sb.ToString();
-            }
-            return title;
+            GetWindowText(handle, sb, titleLength);
+            
+            return sb.ToString();
         }
         
         //get process name
-        public static  string getForegroundProcName()
+        public static string getPsName(IntPtr handle)
         {
-
             uint pid = 0;
-            IntPtr handle = GetForegroundWindow();
             GetWindowThreadProcessId(handle, out pid);
             Process p = Process.GetProcessById( (int)pid );
-
-            return p.ProcessName;
+            return p.ProcessName.ToLower();
         }
 
-        //get process ID
-        public static  int getPid()
+        public static void getAll(out string winTitle, out string psName, out string URL)
         {
-            uint pid = 0;
-            IntPtr handle = GetForegroundWindow();
-            GetWindowThreadProcessId(handle, out pid);
+            try
+            {
+                //foreground window
+                IntPtr handle = GetForegroundWindow();
 
-            return (int) pid;
+                //foreground window title
+                winTitle = getWintitle(handle);
+
+                //process name
+                psName = getPsName(handle);
+
+                //URL of foreground window
+                if (psName.Equals("chrome"))
+                    URL = GetUrl.fromChromeTitle(winTitle, handle);
+                else
+                    URL = "";
+
+                return;
+            }
+            catch                   //window closes before PID is able to be obtained, throws exception. Usually happens when the focus is on window A and user clicked close on window B
+            {
+                winTitle = "ignore";
+                psName = "ignore";
+                URL = "ignore";
+                return;
+            }
         }
+
     }
 }

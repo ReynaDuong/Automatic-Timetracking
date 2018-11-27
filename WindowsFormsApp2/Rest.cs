@@ -43,7 +43,7 @@ namespace WindowsFormsApp2
             if( (request.Method == "POST" || request.Method == "PUT") && body != String.Empty)
             {
                 request.ContentType = "application/json";
-                request.Headers.Add("x-api-key", "W71Y8LB5hwFG+dza");
+                //request.Headers.Add("x-api-key", "W71Y8LB5hwFG+dza");
                 //MessageBox.Show(request.ContentType);
                 using (StreamWriter swJSONPayload = new StreamWriter(request.GetRequestStream()))       //write 'body' into 'request'
                 {

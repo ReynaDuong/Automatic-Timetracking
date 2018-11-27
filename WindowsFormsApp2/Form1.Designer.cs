@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem13 = new System.Windows.Forms.ListViewItem("");
-            System.Windows.Forms.ListViewItem listViewItem14 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("");
             this.label1 = new System.Windows.Forms.Label();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -60,6 +60,14 @@
             this.label16 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -83,7 +91,7 @@
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem13});
+            listViewItem1});
             this.listView1.Location = new System.Drawing.Point(11, 215);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(597, 299);
@@ -108,17 +116,17 @@
             // columnHeader4
             // 
             this.columnHeader4.Text = "Idled";
-            this.columnHeader4.Width = 56;
+            this.columnHeader4.Width = 62;
             // 
             // columnHeader5
             // 
             this.columnHeader5.Text = "Task";
-            this.columnHeader5.Width = 132;
+            this.columnHeader5.Width = 113;
             // 
             // columnHeader6
             // 
             this.columnHeader6.Text = "Active";
-            this.columnHeader6.Width = 59;
+            this.columnHeader6.Width = 74;
             // 
             // label2
             // 
@@ -283,7 +291,7 @@
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem14});
+            listViewItem2});
             this.listView2.Location = new System.Drawing.Point(615, 215);
             this.listView2.Name = "listView2";
             this.listView2.Size = new System.Drawing.Size(194, 283);
@@ -328,11 +336,91 @@
             this.label18.TabIndex = 21;
             this.label18.Text = "Tasks With Association";
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(342, 9);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(35, 13);
+            this.label8.TabIndex = 22;
+            this.label8.Text = "label8";
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(342, 39);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(41, 13);
+            this.label19.TabIndex = 23;
+            this.label19.Text = "label19";
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(342, 65);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(41, 13);
+            this.label20.TabIndex = 24;
+            this.label20.Text = "label20";
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(342, 93);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(41, 13);
+            this.label21.TabIndex = 25;
+            this.label21.Text = "label21";
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(488, 9);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(41, 13);
+            this.label22.TabIndex = 29;
+            this.label22.Text = "label22";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(488, 39);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(41, 13);
+            this.label23.TabIndex = 28;
+            this.label23.Text = "label23";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(488, 65);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(41, 13);
+            this.label24.TabIndex = 27;
+            this.label24.Text = "label24";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(488, 88);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(41, 13);
+            this.label25.TabIndex = 26;
+            this.label25.Text = "label25";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(820, 523);
+            this.Controls.Add(this.label22);
+            this.Controls.Add(this.label23);
+            this.Controls.Add(this.label24);
+            this.Controls.Add(this.label25);
+            this.Controls.Add(this.label21);
+            this.Controls.Add(this.label20);
+            this.Controls.Add(this.label19);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.label18);
             this.Controls.Add(this.label17);
             this.Controls.Add(this.label16);
@@ -396,6 +484,14 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label25;
     }
 }
 

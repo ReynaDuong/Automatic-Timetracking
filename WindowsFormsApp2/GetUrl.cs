@@ -31,8 +31,6 @@ namespace WindowsFormsApp2
                     AutomationElement elmUrlBar = elm.FindFirst(TreeScope.Descendants, 
                                                                 new PropertyCondition(AutomationElement.NameProperty, "Address and search bar"));
 
-                    //MessageBox.Show("here");
-
                     // if it can be found, get the value from the URL bar
                     if (elmUrlBar != null)
                     {
@@ -43,19 +41,26 @@ namespace WindowsFormsApp2
 
                             if (val != null)
                             {
-                                string url = string.Empty;
+                                string URL = string.Empty;
 
                                 if (val.Current.Value.StartsWith("www"))
-                                    url = "http://" + val.Current.Value + "/";
+                                    URL = "http://" + val.Current.Value + "/";
                                 else
-                                    url = val.Current.Value + "/";
+                                    URL = val.Current.Value + "/";
 
                                 string pattern = @"(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/|www\.)?" +      //matches header such as http, https, ect..
                                                   "(.*?)/";     //matches the rest until / is reached
-
-                                Match match = Regex.Match(url, pattern);
+                                
+                                Match match = Regex.Match(URL, pattern);
                                 if (match.Success)
-                                    return trim(match.Value);
+                                {
+                                    URL = trim(match.Value);
+                                    if (filterUrl(URL))
+                                        return URL;
+                                    else
+                                        return "/";
+                                }
+                                    
                             }
                         }
                     }
@@ -65,49 +70,70 @@ namespace WindowsFormsApp2
             {
                 MessageBox.Show(e.ToString());
             }
-            return "";
+            return "/";
         }
 
-        public static string fromChromeTitle(string title)
+        //get URL from title, chrome extension needed
+        public static string fromChromeTitle(string winTitle, IntPtr handle)
         {
-            Match match;
+            string URL = string.Empty;
             string pattern = @"\[(.*?)\]";
+            Match match;
 
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 40; i++)
             {
+                if (Global.winTitle2url.ContainsKey(winTitle))
+                    return Global.winTitle2url[winTitle];
+
                 System.Threading.Thread.Sleep(25);
 
-                if (!filter(title))
+                if (!filterTitle(winTitle))
                     return "/";
 
-                match = Regex.Match(title, pattern);
-
+                match = Regex.Match(winTitle, pattern);
                 if (match.Success)
                 {
-                    title = trim2(match.Value);
-                    return title;
+                    URL = trim2(match.Value);
+                    Global.winTitle2url.Add(winTitle, URL);
+                    return URL;
                 }
-                else if (!ProcessInfo.getForegroundProcName().Equals("chrome"))
-                    return "";
                 else
-                    title = ProcessInfo.getForegroundWinTitle();
+                    winTitle = ProcessInfo.getWintitle(handle);
             }
 
-            return chrome();
+            
+            URL = chrome();
+            Global.winTitle2url.Add(winTitle, URL);
+            return URL;
         }
 
-        private static bool filter(string title)
+        private static bool filterTitle(string title)
         {
-            if (title.Equals("Untitled - Google Chrome") ||
+            if (title.Equals("") ||
+                title.Equals("Untitled - Google Chrome") ||
                 title.Equals("New Tab - Google Chrome") ||
                 title.Equals("Downloads - Google Chrome") ||
                 title.Equals("Extensions - Google Chrome") ||
-                title.Equals("Settings - Google Chrome")
+                title.Equals("Settings - Google Chrome") ||
+                title.Equals("Bookmarks - Google Chrome")  ||
+                title.Equals("Disable developer mode extensions")
              )
             {
                 return false;
             }
 
+            return true;
+        }
+
+        private static bool filterUrl(string URL)
+        {
+            if (URL.Equals("chrome-extension:") ||
+               (URL.Equals(""))
+                )
+            {
+                
+                return false;
+            }
             return true;
         }
 
