@@ -467,6 +467,12 @@ namespace WindowsFormsApp2
         //delete time entries of a workspace
         private void button3_Click(object sender, EventArgs e)
         {
+            if (Global.workspaceId.Equals(string.Empty))
+            {
+                MessageBox.Show("Session is not running, choose a workspace/project first.");
+                return;
+            }
+
             System.Threading.Thread delete = new Thread(deleteEntries);
             delete.Start();
         }
@@ -474,12 +480,6 @@ namespace WindowsFormsApp2
         //thread to delete time entries
         private void deleteEntries()
         {
-            if (Global.workspaceId.Equals(string.Empty))
-            {
-                MessageBox.Show("Session is not running, choose a workspace/project first.");
-                return;
-            }
-
             pollMutex.WaitOne();
             idleMonitorMutex.WaitOne();
             associateRaw();
