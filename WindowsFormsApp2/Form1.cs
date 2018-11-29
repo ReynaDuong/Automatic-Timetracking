@@ -24,6 +24,8 @@ namespace WindowsFormsApp2
         int idleDebug = 0;
 
         private const uint MIN_IDLE_SECONDS = 3;    //minimum seconds that trips the idle counter
+        private const int MIN_TIME_TO_POST = 0;     //minimum second of differences in duration before posting
+
         bool idling = false;
         uint seconds = 0;
         double idleSeconds = 0;
@@ -229,7 +231,7 @@ namespace WindowsFormsApp2
             uint ts = (uint) idt.ts.TotalSeconds;
             uint lastPostedTs = (uint)idt.lastPostedTs.TotalSeconds;
 
-            if ((ts - lastPostedTs) > 5)
+            if ((ts - lastPostedTs) >= MIN_TIME_TO_POST)
                 return true;
             else
                 return false;
@@ -601,7 +603,6 @@ namespace WindowsFormsApp2
             uint currentTick = 0;
             uint lastTick = 0;
 
-
             while (true)
             {
                 idleMonitorMutex.WaitOne();
@@ -635,14 +636,17 @@ namespace WindowsFormsApp2
 
                 
                 if (idleDebug == 1)
+                {
                     label14.Text = idleSeconds.ToString();
+                    label8.Text = stopwatch.Elapsed.TotalSeconds.ToString();
+                    label22.Text = "idled at    " + idledAt.ToString();
+                    label23.Text = "cont. from    " + idleContinued.ToString();
+                    label25.Text = seconds.ToString();
+                }
                 else
                     label14.Text = ((int) idleSeconds).ToString();
 
-                label8.Text = stopwatch.Elapsed.TotalSeconds.ToString();
-                label22.Text = "idled at    " + idledAt.ToString();
-                label23.Text = "cont. from    " + idleContinued.ToString();
-                label25.Text = seconds.ToString();
+                
 
                 idleMonitorMutex.ReleaseMutex();
             }

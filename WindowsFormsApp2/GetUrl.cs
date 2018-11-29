@@ -93,9 +93,11 @@ namespace WindowsFormsApp2
                 match = Regex.Match(winTitle, pattern);
                 if (match.Success)
                 {
+                    //return match.Value;
                     URL = trim2(match.Value);
                     Global.winTitle2url.Add(winTitle, URL);
                     return URL;
+                    
                 }
                 else
                     winTitle = ProcessInfo.getWintitle(handle);
