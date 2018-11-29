@@ -3,7 +3,7 @@
 
 database info:
 - name - mydb<br />
-- student<br />
+- UN - student<br />
 - PW - student<br />
 - 144.202.73.223:3306<br />
 - 144.202.73.223/phpmyadmin (management)<br />
