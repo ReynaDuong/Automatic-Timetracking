@@ -309,7 +309,7 @@ namespace WindowsFormsApp2
             catch                                                              //non associated events will be marked as undefined
             {
                 idt.taskId = "";
-                idt.taskName = "*No association";
+                idt.taskName = "*No association*";
             }
 
             associatedSet.Add(e);
