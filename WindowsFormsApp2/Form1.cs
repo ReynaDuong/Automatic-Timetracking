@@ -52,9 +52,7 @@ namespace WindowsFormsApp2
         Mutex startPollingMutex = new Mutex();      //same for posting thread
         Mutex startIdleMonMutex = new Mutex();      //halt idle monitoring thread until project is selected 
 
-        int i = 0;
-        int j = 0;
-        int k = 0;
+        int i, j, k = 0;
 
         public Form1()
         //public Form1()
@@ -311,7 +309,7 @@ namespace WindowsFormsApp2
             catch                                                              //non associated events will be marked as undefined
             {
                 idt.taskId = "";
-                idt.taskName = "No association";
+                idt.taskName = "*No association";
             }
 
             associatedSet.Add(e);
@@ -372,6 +370,8 @@ namespace WindowsFormsApp2
         //start association from scratch, clears out all current dictionaries
         private void associateRaw()
         {
+            i = j = k = 0;
+
             listView1.Items.Clear();
             listView2.Items.Clear();
 
@@ -667,6 +667,7 @@ namespace WindowsFormsApp2
         {
             if (idleDebug == 0)
             {
+                label7.Visible = false;
                 label8.Visible = false;
                 label19.Visible = false;
                 label20.Visible = false;
@@ -682,6 +683,7 @@ namespace WindowsFormsApp2
             }
             else
             {
+                label7.Visible = true;
                 label8.Visible = true;
                 label19.Visible = true;
                 label20.Visible = true;
