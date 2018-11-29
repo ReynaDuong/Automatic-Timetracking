@@ -21,6 +21,8 @@ namespace WindowsFormsApp2
         public Form2()
         {
             InitializeComponent();
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
         }
 
         private void label1_Click(object sender, EventArgs e)

@@ -77,7 +77,7 @@ namespace WindowsFormsApp2
         public static string fromChromeTitle(string winTitle, IntPtr handle)
         {
             string URL = string.Empty;
-            string pattern = @"\[(.*?)\]";
+            string pattern = @"\[(.*?)\[utd®\]";
             Match match;
 
             for (int i = 0; i < 40; i++)
@@ -116,7 +116,8 @@ namespace WindowsFormsApp2
                 title.Equals("Extensions - Google Chrome") ||
                 title.Equals("Settings - Google Chrome") ||
                 title.Equals("Bookmarks - Google Chrome")  ||
-                title.Equals("Disable developer mode extensions")
+                title.Equals("Disable developer mode extensions") || 
+                title.Contains(".pdf")
              )
             {
                 return false;
@@ -148,7 +149,7 @@ namespace WindowsFormsApp2
                 count = 1;
 
             trimmed = url.Remove(0, count);
-            trimmed = trimmed.Substring(0, trimmed.Length - 1);
+            trimmed = trimmed.Substring(0, trimmed.Length - 6);
 
             return trimmed;
         }

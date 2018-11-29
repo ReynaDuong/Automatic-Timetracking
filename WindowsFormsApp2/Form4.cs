@@ -29,7 +29,7 @@ namespace WindowsFormsApp2
             //format
             this.TopMost = true;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = true;
+            this.MaximizeBox = false;
             this.MinimizeBox = true;
             this.Activate();
 

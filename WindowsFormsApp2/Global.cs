@@ -19,6 +19,7 @@ namespace WindowsFormsApp2
         public static string workspaceName = string.Empty;
         public static int chosen = 0;
 
+
         public static Dictionary<Event, EventValues> dictionaryEvents = new Dictionary<Event, EventValues>();                //user's live event->task association
         public static Dictionary<string, Dto.TaskDto> associations = new Dictionary<string, Dto.TaskDto>();                  //all event->task association
         public static Dictionary<string, string> allTaskIdName = new Dictionary<string, string>();                           //all taskId->taskName of a project
@@ -27,6 +28,11 @@ namespace WindowsFormsApp2
         public static Dictionary<string, string> winTitle2url = new Dictionary<string, string>();                            //holds chrome winTItle->URL
 
         public static TimeSpan activeTotal;
+
+        public static Mutex idleMonitorMutex = new Mutex();
+        public static Stopwatch stopwatch = new Stopwatch();
+        public static int idleReset = 0;
+
 
         public static void clearGlobals()
         {
@@ -62,7 +68,7 @@ namespace WindowsFormsApp2
                 }
 
             }
-            else if (e.process.Equals("idle") ||
+            else if (e.process.Equals("idlezz") ||
                      e.process.Equals("ShellExperienceHost") ||
                     (e.winTitle.Equals("File Explorer") && (e.winTitle.Equals("explorer"))) ||
                      e.winTitle.Equals("")

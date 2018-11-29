@@ -116,15 +116,17 @@ namespace WindowsFormsApp2
         }
 
         //insert process(1) or URL(2), also inserts workspaceId, projectId, or tasksID if they don't exist  
-        public static void insertRule(int type, string value, string workspaceId, string projectId, string taskID, string workspaceName, string projectName, string taskName)
+        public static void insertRule(int type, string value, string workspaceId, string projectId, string taskId, string workspaceName, string projectName, string taskName)
         {
             string query = string.Empty;
+            string existedTaskName = string.Empty;
+            string existedTaskId = string.Empty;
 
             if (value.Equals(""))
                 return;
 
             //if task doesn't exist, check if parent ID exists and insert if necessary
-            if (!ifExist(3, taskID, ""))                                
+            if (!ifExist(3, taskId, ""))                                
             {
                 if (!ifExist(2, projectId, ""))
                 {
@@ -134,7 +136,7 @@ namespace WindowsFormsApp2
                     }
                     insertClockifyInfo(2, projectName, projectId, workspaceId);
                 }
-                insertClockifyInfo(3, taskName, taskID, projectId);
+                insertClockifyInfo(3, taskName, taskId, projectId);
             }
             
 
@@ -142,18 +144,22 @@ namespace WindowsFormsApp2
 
             if (type == 1)
                 if (!ifExist(4, projectId, value))                 //insert rule only if it doesn't exist in current task
-                    query = "INSERT INTO `Processes` (`Name`, `TaskID`, `projectId`) VALUES('" + value + "', '" + taskID + "', '" + projectId + "')";
+                    query = "INSERT INTO `Processes` (`Name`, `TaskID`, `projectId`) VALUES('" + value + "', '" + taskId + "', '" + projectId + "')";
                 else
                 {
-                    MessageBox.Show("'" + value + "' already exist for this project!");
+                    existedTaskId = queryTaskId(1, value, projectId);
+                    existedTaskName = queryTaskName(existedTaskId, projectId);
+                    MessageBox.Show("'" + value + "' already exist in task '" + existedTaskName + "'");
                     return;
                 }
             else if (type == 2)
                 if (!ifExist(5, projectId, value))
-                    query = "INSERT INTO `URLs` (`URL`, `TaskID`, `projectId`) VALUES('" + value + "', '" + taskID + "', '" + projectId + "')";
+                    query = "INSERT INTO `URLs` (`URL`, `TaskID`, `projectId`) VALUES('" + value + "', '" + taskId + "', '" + projectId + "')";
                 else
                 {
-                    MessageBox.Show("'" + value + "' already exist for this project!");
+                    existedTaskId = queryTaskId(2, value, projectId);
+                    existedTaskName = queryTaskName(existedTaskId, projectId);
+                    MessageBox.Show("'" + value + "' already exist in task '" + existedTaskName + "'");
                     return;
                 }
                     
@@ -165,9 +171,55 @@ namespace WindowsFormsApp2
             dbConn.Close();
         }
 
+        //queries a taskId from table 'processes' or 'url'
+        public static string queryTaskId(int type, string value, string projectId)
+        {
+            IntializeDB();
+            string taskId = string.Empty;
+            string query = string.Empty;
+
+            if (type == 1)
+                query = "SELECT Processes.TaskID FROM Processes WHERE Processes.Name = '" + value + "' AND Processes.ProjectID = '" + projectId + "'";
+            else if (type == 2)
+                query = "SELECT URLs.TaskID FROM URLs WHERE URLs.URL = '" + value + "' AND URLs.ProjectID = '" + projectId + "'";
+
+
+            MySqlCommand cmd = new MySqlCommand(query, dbConn);
+
+            dbConn.Open();                                      //opens connection
+
+            MySqlDataReader reader = cmd.ExecuteReader();       //makes the query
+
+            reader.Read();
+            taskId = reader[0].ToString();
+
+            dbConn.Close();
+            return taskId;
+        }
+
+
+        //queries a task name
+        public static string queryTaskName(string taskId, string projectId)
+        {
+            IntializeDB();
+            string taskName = string.Empty;
+            string query = "SELECT Tasks.Name FROM Tasks WHERE Tasks.ID = '" + taskId + "' AND Tasks.ProjectID = '" + projectId + "'";
+
+            MySqlCommand cmd = new MySqlCommand(query, dbConn);
+
+            dbConn.Open();                                      //opens connection
+
+            MySqlDataReader reader = cmd.ExecuteReader();       //makes the query
+
+            reader.Read();
+            taskName = reader[0].ToString();
+            
+            dbConn.Close();
+            return taskName;
+        }
 
         //check if entry already exists
-        public static bool ifExist(int type, string id, string value)
+        public static bool ifExist(int type, string projectId, string value)
         {
             IntializeDB();
             string table = string.Empty;
@@ -185,11 +237,11 @@ namespace WindowsFormsApp2
                 table = "URLss";
 
             if (type < 4)
-                query = "SELECT EXISTS (SELECT * FROM " + table + " WHERE ID = '" + id + "') as `is-exists`";
+                query = "SELECT EXISTS (SELECT * FROM " + table + " WHERE ID = '" + projectId + "') as `is-exists`";
             else if (type == 4)
-                query = "SELECT EXISTS(SELECT * FROM Processes WHERE Name = '" + value + "' AND projectId = '" + id + "') as `is -exists`";
+                query = "SELECT EXISTS(SELECT * FROM Processes WHERE Name = '" + value + "' AND projectId = '" + projectId + "') as `is -exists`";
             else if (type == 5)
-                query = "SELECT EXISTS(SELECT * FROM URLs WHERE URL = '" + value + "' AND projectId = '" + id + "') as `is -exists`";
+                query = "SELECT EXISTS(SELECT * FROM URLs WHERE URL = '" + value + "' AND projectId = '" + projectId + "') as `is -exists`";
 
 
             MySqlCommand cmd = new MySqlCommand(query, dbConn);

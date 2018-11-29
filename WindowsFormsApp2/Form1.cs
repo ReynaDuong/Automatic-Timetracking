@@ -21,9 +21,17 @@ namespace WindowsFormsApp2
 {
     public partial class Form1 : Form
     {
+        int idleDebug = 0;
+
         private const uint MIN_IDLE_SECONDS = 3;    //minimum seconds that trips the idle counter
-        uint idleSeconds = 0;                       //seconds idled
-        uint idleFreeze = 0;                        //freeze frame of idled seconds
+        bool idling = false;
+        uint seconds = 0;
+        double idleSeconds = 0;
+        double idleFreeze = 0;
+        double idledAt = 0;
+        double idleContinued = 0;
+
+        TimeSpan idleTime = TimeSpan.FromSeconds(0.0);
 
         string winTitle = string.Empty;             //current winTitle
         string psName = string.Empty;               //current psName
@@ -35,15 +43,16 @@ namespace WindowsFormsApp2
         
         string elapsedTime = string.Empty;
         Stopwatch stopwatch = new Stopwatch();
-        TimeSpan ts;
+        TimeSpan ts = new TimeSpan();
 
         Mutex pollMutex = new Mutex();              //prevent from polling when choosing project/associations/deleting time entries, etc..
         Mutex idleMonitorMutex = new Mutex();       //protects 'idleSeconds' being written by posting/monitoring threads at the same time
-
         Mutex startPollingMutex = new Mutex();      //same for posting thread
         Mutex startIdleMonMutex = new Mutex();      //halt idle monitoring thread until project is selected 
 
         int i = 0;
+        int j = 0;
+        int k = 0;
 
         public Form1()
         //public Form1()
@@ -51,13 +60,14 @@ namespace WindowsFormsApp2
             InitializeComponent();
             label6.Text = Global.name;
             label9.Text = "Choose a project to begin session...";
-
+            
             //format
             this.TopMost = true;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = true;
+            this.MaximizeBox = false;
             this.MinimizeBox = true;
             this.CenterToScreen();
+            hideLabels();
 
             //wait until a project is selected
             startPollingMutex.WaitOne();
@@ -88,16 +98,20 @@ namespace WindowsFormsApp2
                     pollMutex.WaitOne();
                     System.Threading.Thread.Sleep(50);
 
-                    ProcessInfo.getAll(out winTitle, out psName, out URL);
+                    ProcessInfo.getAll(out winTitle, out psName, out URL);                //get foreground window info
                     if (psName.Equals("chrome"))
                     {
                         if (!prevTitle.Equals(winTitle))                                  //tab title changed
                         {
+                            stopwatch.Stop();
                             ts = stopwatch.Elapsed;
+
+                            idleMonitorMutex.WaitOne();
                             Event e = dictionaryInsert();
+                            idleMonitorMutex.ReleaseMutex();
                             timeEntriesPost(e);                                           //post or update time entries
                             stopwatch.Restart();
-
+                            
                             prevTitle = winTitle;
                             prevPs = psName;
                             prevUrl = URL;
@@ -111,8 +125,13 @@ namespace WindowsFormsApp2
                     {
                         if (!prevTitle.Equals(winTitle))
                         {
+                            stopwatch.Stop();
                             ts = stopwatch.Elapsed;
+
+                            idleMonitorMutex.WaitOne();
                             Event e = dictionaryInsert();
+                            idleMonitorMutex.ReleaseMutex();
+
                             timeEntriesPost(e);
                             stopwatch.Restart();
 
@@ -136,8 +155,6 @@ namespace WindowsFormsApp2
 
         }//end polling thread
 
-
-
         //post or update time entries
         public void timeEntriesPost(Event e)
         {
@@ -156,7 +173,7 @@ namespace WindowsFormsApp2
 
             if (idt.taskId.Equals(""))                               //undefined events (events with empty task ID) will not be uploaded
                 return;
-            else if (!shouldPost(idt, e))                            //if less than 5 seconds difference from last post
+            else if (!shouldPost(idt, e))                            //post only if more than 5 seconds in differences
                 return;
 
             i++;
@@ -218,7 +235,7 @@ namespace WindowsFormsApp2
                 return false;
         }
 
-        //associate event to task ID and names for 'dictionaryEvent'
+        //associate event to task ID and names for 'dictionaryEvent
         public List<dynamic> associateForDictionaryEvents()
         {
             Event e = new Event();
@@ -228,22 +245,41 @@ namespace WindowsFormsApp2
             e.winTitle = prevTitle;
             e.process = prevPs;
             e.url = prevUrl;
+
+            if (!Global.filter(e))
+                return null;
+
+
             idt.ts = ts;
             idt.entryId = "";
-            
-            idleFreeze = idleSeconds;
 
-            if (idleFreeze > MIN_IDLE_SECONDS)
+            label28.Text = idleSeconds.ToString();
+
+            idleFreeze = Math.Floor(idleSeconds);
+            //if (idleFreeze >= MIN_IDLE_SECONDS)
+            if (idleFreeze > 0)
             {
-                label25.Text = "IDLED DETECTED";
 
-                if ((idt.ts.TotalSeconds - idleFreeze) < 0)
+                label19.Text = prevPs;
+                label20.Text = idt.ts.TotalSeconds.ToString();
+                label21.Text = idleFreeze.ToString();
+
+
+                if ((idt.ts.TotalSeconds - idleFreeze) < 0)                    //splash screen loading, etc..
                 {
-                    label8.Text = prevPs;
-                    label19.Text = idt.ts.ToString();
-                    label20.Text = idleFreeze.ToString();
-                    
-                    MessageBox.Show("idle problem");
+                    idleMonitorMutex.WaitOne();
+
+                    string title, ps, url = string.Empty;
+                    ProcessInfo.getAll(out title, out ps, out url);
+                    label24.Text = ps;
+
+
+                    //MessageBox.Show("idle problem");
+                    k++;
+                    label29.Text = "Idle error occured# " + k.ToString();
+
+
+                    idleMonitorMutex.ReleaseMutex();
 
                     idt.idle = TimeSpan.FromSeconds(0.0);
                 }
@@ -288,6 +324,12 @@ namespace WindowsFormsApp2
             //perform association
             List<dynamic> associatedSet = associateForDictionaryEvents();
 
+            if (associatedSet == null)
+            {
+                resetIdle();
+                return null;
+            }
+
             Event e = associatedSet[0];                         //key
             EventValues idt = associatedSet[1];                 //value
 
@@ -297,7 +339,7 @@ namespace WindowsFormsApp2
                 {
                     Global.dictionaryEvents[e].ts = Global.dictionaryEvents[e].ts + ts;
 
-                    if (idleFreeze >= MIN_IDLE_SECONDS)
+                    if (idleFreeze > 0)
                         Global.dictionaryEvents[e].idle = Global.dictionaryEvents[e].idle + TimeSpan.FromSeconds(idleFreeze);
 
                     TimeSpan oldActive = Global.dictionaryEvents[e].active;                                                 //old active time
@@ -309,9 +351,6 @@ namespace WindowsFormsApp2
                 }
                 else
                 {
-                    if (!Global.filter(e))
-                        return null;
-                    
                     Global.dictionaryEvents.Add(e, idt);
 
                     historyUpdate(1, e);
@@ -322,16 +361,8 @@ namespace WindowsFormsApp2
             {
                 MessageBox.Show(ex.ToString());
             }
-
-            //idleSeonds has been consumed, restting it to 0
-            if (idleSeconds >= MIN_IDLE_SECONDS)
-            {
-                idleMonitorMutex.WaitOne();
-                idleSeconds = 0;
-                label14.Text = idleSeconds.ToString();
-                idleMonitorMutex.ReleaseMutex();
-            }
-
+            
+            resetIdle();
             return e;
 
         }//end dictionaryInsert
@@ -375,6 +406,8 @@ namespace WindowsFormsApp2
             bindDefinedTaskIdListId();
 
             stopwatch.Restart();
+            resetIdle();
+
             i = 0;                          //postingThread counts
         }
 
@@ -432,75 +465,39 @@ namespace WindowsFormsApp2
         //delete time entries of a workspace
         private void button3_Click(object sender, EventArgs e)
         {
+            System.Threading.Thread delete = new Thread(deleteEntries);
+            delete.Start();
+        }
+
+        //thread to delete time entries
+        private void deleteEntries()
+        {
             if (Global.workspaceId.Equals(string.Empty))
             {
                 MessageBox.Show("Session is not running, choose a workspace/project first.");
                 return;
             }
-                
+
             pollMutex.WaitOne();
+            idleMonitorMutex.WaitOne();
             associateRaw();
-            
+
             List<Dto.TimeEntryFullDto> entries = new List<Dto.TimeEntryFullDto>();
-            while ( (entries = API.FindTimeEntriesByWorkspace(Global.workspaceId)).Count > 0 )
+            while ((entries = API.FindTimeEntriesByWorkspace(Global.workspaceId)).Count > 0)
             {
                 foreach (Dto.TimeEntryFullDto entry in entries)
                 {
                     API.DeleteTimeEntry(Global.workspaceId, entry.id);
                 }
             }
+
+            idleMonitorMutex.ReleaseMutex();
             pollMutex.ReleaseMutex();
-        }
-
-        //thread to monitor idle
-        private void startIdleMonitoring()
-        {
-            startIdleMonMutex.WaitOne(-1, false);
-            uint currentTick = 0;
-            uint lastTick = 0;
-            uint seconds = 0;
-            int idleStatus = 0;
-
-            while (true)
-            {
-                System.Threading.Thread.Sleep(1000);
-
-                currentTick = (uint)Environment.TickCount;             //current tick count
-                lastTick = ProcessInfo.getLastTick();                  //last input tick count
-
-                seconds = (currentTick - lastTick) / 1000;             //convert to seconds
-
-                if (seconds >= MIN_IDLE_SECONDS)
-                {
-                    idleMonitorMutex.WaitOne();
-
-                    if (idleSeconds == 0 && idleStatus == 0)
-                    {
-                        idleSeconds = seconds;
-                        idleStatus = 1;
-                    }
-                    else if (idleStatus == 0)
-                    {
-                        idleSeconds += seconds;
-                        idleStatus = 1;
-                    }
-                    else if (idleStatus == 1)
-                        idleSeconds++;
-
-                    label14.Text = idleSeconds.ToString();
-
-                    idleMonitorMutex.ReleaseMutex();
-                }
-                else
-                    idleStatus = 0;
-            }
         }
 
         //update listView
         private void historyUpdate(int newItem, Event e)
         {
-            //listView1.BeginUpdate();
-
             EventValues idt = Global.dictionaryEvents[e];
 
             string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}", idt.ts.Hours, idt.ts.Minutes, idt.ts.Seconds);
@@ -525,15 +522,11 @@ namespace WindowsFormsApp2
                 listView1.Items[Global.dictionaryEvents[e].listId].SubItems[3].Text = idledTime;
                 listView1.Items[Global.dictionaryEvents[e].listId].SubItems[5].Text = activeTime;
             }
-
-            //listView1.EndUpdate();
         }
 
         //update times in time log
         private void taskTimeLogUpdate(Event e)
         {
-           // listView2.BeginUpdate();
-
             EventValues idt = Global.dictionaryEvents[e];
             string taskId = idt.taskId;
 
@@ -552,14 +545,13 @@ namespace WindowsFormsApp2
 
             listView2.Items[listId].SubItems[1].Text = newActiveFormated;
             label17.Text = activeTotal;
-
-            //listView2.EndUpdate();
         }
 
         //associations (Form 4)
         private void button1_Click(object sender, EventArgs e)
         {
             pollMutex.WaitOne();                      //prevent inserting into dictionary while making association changes
+            idleMonitorMutex.WaitOne();
 
             Form4 f = new Form4();
             f.StartPosition = FormStartPosition.CenterParent;
@@ -571,13 +563,15 @@ namespace WindowsFormsApp2
                 Global.chosen = 0;
             }
 
+            idleMonitorMutex.ReleaseMutex();
             pollMutex.ReleaseMutex();
         }
 
-        //projects (Form 3
+        //projects (Form 3)
         private void button2_Click(object sender, EventArgs e)
         {
             pollMutex.WaitOne();                      //prevent inserting into dictionary while making association changes
+            idleMonitorMutex.WaitOne();
 
             Form3 f = new Form3();
             f.StartPosition = FormStartPosition.CenterParent;
@@ -596,7 +590,122 @@ namespace WindowsFormsApp2
                 Global.chosen = 0;
             }
 
+            idleMonitorMutex.ReleaseMutex();
             pollMutex.ReleaseMutex();
+        }
+
+        //thread to monitor idle
+        private void startIdleMonitoring()
+        {
+            startIdleMonMutex.WaitOne(-1, false);
+            uint currentTick = 0;
+            uint lastTick = 0;
+
+
+            while (true)
+            {
+                idleMonitorMutex.WaitOne();
+                System.Threading.Thread.Sleep(50);
+
+                currentTick = (uint)Environment.TickCount;             //current tick count
+                lastTick = ProcessInfo.getLastTick();                  //last input tick count
+
+                if (lastTick == 0)                                     //fails to get tick
+                    continue;
+
+                seconds = (currentTick - lastTick) / 1000;             //convert to seconds
+                if (seconds >= MIN_IDLE_SECONDS)
+                {
+
+                    if (idling == false)
+                    {
+                        idling = true;                                  //tripped
+                        idledAt = stopwatch.Elapsed.TotalSeconds;
+                    }
+                }
+                else if (idling == true)
+                {
+                    idling = false;
+                    idleContinued += stopwatch.Elapsed.TotalSeconds - idledAt;
+                }
+
+
+                if (seconds >= MIN_IDLE_SECONDS && idling == true)
+                    idleSeconds = idleContinued + (stopwatch.Elapsed.TotalSeconds - idledAt);
+
+                
+                if (idleDebug == 1)
+                    label14.Text = idleSeconds.ToString();
+                else
+                    label14.Text = ((int) idleSeconds).ToString();
+
+                label8.Text = stopwatch.Elapsed.TotalSeconds.ToString();
+                label22.Text = "idled at    " + idledAt.ToString();
+                label23.Text = "cont. from    " + idleContinued.ToString();
+                label25.Text = seconds.ToString();
+
+                idleMonitorMutex.ReleaseMutex();
+            }
+        }
+
+        private void resetIdle()
+        {
+            j++;
+            label26.Text = "RESET# " + j.ToString();
+            label27.Text = prevPs;
+            idling = false;
+            idleSeconds = 0;
+            idleContinued = 0;
+            idledAt = 0;
+        }
+
+        private void hideLabels()
+        {
+            if (idleDebug == 0)
+            {
+                label8.Visible = false;
+                label19.Visible = false;
+                label20.Visible = false;
+                label21.Visible = false;
+                label22.Visible = false;
+                label23.Visible = false;
+                label24.Visible = false;
+                label25.Visible = false;
+                label26.Visible = false;
+                label27.Visible = false;
+                label28.Visible = false;
+                label29.Visible = false;
+            }
+            else
+            {
+                label8.Visible = true;
+                label19.Visible = true;
+                label20.Visible = true;
+                label21.Visible = true;
+                label22.Visible = true;
+                label23.Visible = true;
+                label24.Visible = true;
+                label25.Visible = true;
+                label26.Visible = true;
+                label27.Visible = true;
+                label28.Visible = true;
+                label29.Visible = true;
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (idleDebug == 0)
+            {
+                idleDebug = 1;
+                hideLabels();
+            }
+            else
+            {
+                idleDebug = 0;
+                hideLabels();
+            }
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
