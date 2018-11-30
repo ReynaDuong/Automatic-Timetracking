@@ -33,8 +33,6 @@ namespace WindowsFormsApp2
         double idledAt = 0;
         double idleContinued = 0;
 
-        TimeSpan idleTime = TimeSpan.FromSeconds(0.0);
-
         string winTitle = string.Empty;             //current winTitle
         string psName = string.Empty;               //current psName
         string URL = string.Empty;                  //current URL
@@ -173,7 +171,7 @@ namespace WindowsFormsApp2
 
             if (idt.taskId.Equals(""))                               //undefined events (events with empty task ID) will not be uploaded
                 return;
-            else if (!shouldPost(idt, e))                            //post only if more than 5 seconds in differences
+            else if (!shouldPost(idt, e))                            //post only if more than a certain amount of differences in duration
                 return;
 
             i++;
@@ -428,12 +426,28 @@ namespace WindowsFormsApp2
         {
             string taskId = string.Empty;
             string taskName = string.Empty;
-            
           
             foreach (KeyValuePair<string, Dto.TaskDto> t in Global.associations)
             {
                 taskId = t.Value.id;
                 taskName = t.Value.name;
+
+                if (!Global.definedTaskIdName.ContainsKey(taskId))
+                    Global.definedTaskIdName.Add(taskId, taskName);
+                
+            }
+
+            //perform sorting
+            var sorted = Global.definedTaskIdName.ToList();                         //convert dictionary to a list
+
+            Global.definedTaskIdName.Clear();                                       //clears dictionary
+
+            sorted.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));      //sort the list, by comparing the value of each pair
+
+            foreach (KeyValuePair<string, string> t in sorted)                      //insert sorted pair values back into dictionary
+            {
+                taskId = t.Key;
+                taskName = t.Value;
 
                 if (!Global.definedTaskIdName.ContainsKey(taskId))
                     Global.definedTaskIdName.Add(taskId, taskName);
@@ -446,7 +460,7 @@ namespace WindowsFormsApp2
             string taskId = string.Empty;
             string taskName = string.Empty;
             string startTime = string.Format("{0:00}:{1:00}:{2:00}", TimeSpan.FromSeconds(0).Hours, TimeSpan.FromSeconds(0).Minutes, TimeSpan.FromSeconds(0).Seconds);
-
+            
             foreach (KeyValuePair<string, string> t in Global.definedTaskIdName)
             {
                 taskId = t.Key;

@@ -80,9 +80,10 @@ namespace WindowsFormsApp2
             string query = string.Empty;
 
             if (type == 1)
-                query = "SELECT * FROM Processes WHERE projectId = " + "'" + projectId + "'";
+                query = "SELECT * FROM mydb.Processes WHERE projectId = " + "'" + projectId + "'";
             else if (type == 2)
-                query = "SELECT * FROM URLs WHERE projectId = " + "'" + projectId + "'";
+                query = "SELECT * FROM mydb.URLs WHERE projectId = " + "'" + projectId + "'";
+
 
             MySqlCommand cmd = new MySqlCommand(query, dbConn);
 
@@ -96,6 +97,7 @@ namespace WindowsFormsApp2
             {
                 while (reader.Read())
                 {
+                    //MessageBox.Show(reader[0].ToString());
                     Association r = new Association();
                     r.value = reader[0].ToString();
                     r.taskId = reader[1].ToString();
