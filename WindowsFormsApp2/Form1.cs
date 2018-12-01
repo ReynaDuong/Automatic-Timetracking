@@ -96,51 +96,26 @@ namespace WindowsFormsApp2
                     pollMutex.WaitOne();
                     System.Threading.Thread.Sleep(50);
 
-                    ProcessInfo.getAll(out winTitle, out psName, out URL);                //get foreground window info
-                    if (psName.Equals("chrome"))
-                    {
-                        if (!prevTitle.Equals(winTitle))                                  //tab title changed
-                        {
-                            stopwatch.Stop();
-                            ts = stopwatch.Elapsed;
+                    ProcessInfo.getAll(out winTitle, out psName, out URL);            //get foreground window info
 
-                            idleMonitorMutex.WaitOne();
-                            Event e = dictionaryInsert();
-                            idleMonitorMutex.ReleaseMutex();
-                            timeEntriesPost(e);                                           //post or update time entries
-                            stopwatch.Restart();
+                    if (!prevTitle.Equals(winTitle))                                  //title changed
+                    {
+                        stopwatch.Stop();
+                        ts = stopwatch.Elapsed;
+
+                        idleMonitorMutex.WaitOne();
+                        Event e = dictionaryInsert();
+                        idleMonitorMutex.ReleaseMutex();
+                        timeEntriesPost(e);                                           //post or update time entries
+                        stopwatch.Restart();
                             
-                            prevTitle = winTitle;
-                            prevPs = psName;
-                            prevUrl = URL;
+                        prevTitle = winTitle;
+                        prevPs = psName;
+                        prevUrl = URL;
 
-                            label1.Text = prevTitle;
-                            label2.Text = prevPs;
-                            label4.Text = prevUrl;
-                        }
-                    }
-                    else
-                    {
-                        if (!prevTitle.Equals(winTitle))
-                        {
-                            stopwatch.Stop();
-                            ts = stopwatch.Elapsed;
-
-                            idleMonitorMutex.WaitOne();
-                            Event e = dictionaryInsert();
-                            idleMonitorMutex.ReleaseMutex();
-
-                            timeEntriesPost(e);
-                            stopwatch.Restart();
-
-                            prevTitle = winTitle;
-                            prevPs = psName;
-                            prevUrl = URL;
-
-                            label1.Text = prevTitle;
-                            label2.Text = prevPs;
-                            label4.Text = prevUrl;
-                        }
+                        label1.Text = prevTitle;
+                        label2.Text = prevPs;
+                        label4.Text = prevUrl;
                     }
 
                     pollMutex.ReleaseMutex();
@@ -221,7 +196,7 @@ namespace WindowsFormsApp2
         }//end time entries post/update
 
 
-        //allow post or update if ts is more than 5 seconds of lastPostedTs
+        //allow post or update if ts is more than a specified seconds of lastPostedTs
         public bool shouldPost(EventValues idt, Event e)
         {
             uint ts = (uint) idt.ts.TotalSeconds;
@@ -247,7 +222,6 @@ namespace WindowsFormsApp2
             if (!Global.filter(e))
                 return null;
 
-
             idt.ts = ts;
             idt.entryId = "";
 
@@ -262,8 +236,7 @@ namespace WindowsFormsApp2
                 label20.Text = idt.ts.TotalSeconds.ToString();
                 label21.Text = idleFreeze.ToString();
 
-
-                if ((idt.ts.TotalSeconds - idleFreeze) < 0)                    //splash screen loading, etc..
+                if ((idt.ts.TotalSeconds - idleFreeze) < 0)                    //error, when idle time is more than duration
                 {
                     idleMonitorMutex.WaitOne();
 
@@ -275,7 +248,6 @@ namespace WindowsFormsApp2
                     //MessageBox.Show("idle problem");
                     k++;
                     label29.Text = "Idle error occured# " + k.ToString();
-
 
                     idleMonitorMutex.ReleaseMutex();
 
@@ -518,7 +490,6 @@ namespace WindowsFormsApp2
             label1.Text = "";
             label2.Text = "";
             label4.Text = "";
-
 
             idleMonitorMutex.ReleaseMutex();
             pollMutex.ReleaseMutex();
