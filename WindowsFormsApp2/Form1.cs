@@ -372,6 +372,7 @@ namespace WindowsFormsApp2
 
             listView1.Items.Clear();
             listView2.Items.Clear();
+            label7.Text = i.ToString();
 
             string prevTitle = string.Empty;
             string prevPs = string.Empty;
@@ -407,8 +408,6 @@ namespace WindowsFormsApp2
 
             stopwatch.Restart();
             resetIdle();
-
-            i = 0;                          //postingThread counts
         }
 
         //binds task ID and name together
@@ -494,21 +493,40 @@ namespace WindowsFormsApp2
         //thread to delete time entries
         private void deleteEntries()
         {
+            button1.Enabled = false;
+            button2.Enabled = false;
+            button3.Enabled = false;
+            button4.Enabled = false;
+
             pollMutex.WaitOne();
             idleMonitorMutex.WaitOne();
+
             associateRaw();
+            label1.Text = "Deleting time entries..";
 
             List<Dto.TimeEntryFullDto> entries = new List<Dto.TimeEntryFullDto>();
             while ((entries = API.FindTimeEntriesByWorkspace(Global.workspaceId)).Count > 0)
             {
                 foreach (Dto.TimeEntryFullDto entry in entries)
                 {
+                    label2.Text = entry.description;
+                    label4.Text = entry.id;
                     API.DeleteTimeEntry(Global.workspaceId, entry.id);
                 }
             }
 
+            label1.Text = "";
+            label2.Text = "";
+            label4.Text = "";
+
+
             idleMonitorMutex.ReleaseMutex();
             pollMutex.ReleaseMutex();
+
+            button1.Enabled = true;
+            button2.Enabled = true;
+            button3.Enabled = true;
+            button4.Enabled = true;
         }
 
         //update listView

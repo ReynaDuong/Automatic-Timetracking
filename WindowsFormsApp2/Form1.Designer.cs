@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("");
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("");
             this.label1 = new System.Windows.Forms.Label();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -80,9 +80,8 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(16, 115);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
+            this.label1.Size = new System.Drawing.Size(0, 13);
             this.label1.TabIndex = 0;
-            this.label1.Text = "label1";
             // 
             // listView1
             // 
@@ -96,7 +95,7 @@
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1});
+            listViewItem3});
             this.listView1.Location = new System.Drawing.Point(11, 215);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(597, 299);
@@ -138,9 +137,8 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(16, 139);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(35, 13);
+            this.label2.Size = new System.Drawing.Size(0, 13);
             this.label2.TabIndex = 2;
-            this.label2.Text = "label2";
             // 
             // label3
             // 
@@ -157,9 +155,8 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(16, 166);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.Size = new System.Drawing.Size(0, 13);
             this.label4.TabIndex = 4;
-            this.label4.Text = "label4";
             // 
             // label5
             // 
@@ -296,7 +293,7 @@
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem2});
+            listViewItem4});
             this.listView2.Location = new System.Drawing.Point(615, 215);
             this.listView2.Name = "listView2";
             this.listView2.Size = new System.Drawing.Size(194, 283);
