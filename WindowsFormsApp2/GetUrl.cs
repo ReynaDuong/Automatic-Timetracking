@@ -77,7 +77,8 @@ namespace WindowsFormsApp2
         public static string fromChromeTitle(string winTitle, IntPtr handle)
         {
             string URL = string.Empty;
-            string pattern = @"\[(.*?)\[utd®\]";
+            //string pattern = @"\[(.*?)\[utd®\]";
+            string pattern = @"\[(.*?)\]";
             Match match;
 
             for (int i = 0; i < 40; i++)
@@ -151,7 +152,8 @@ namespace WindowsFormsApp2
                 count = 1;
 
             trimmed = url.Remove(0, count);
-            trimmed = trimmed.Substring(0, trimmed.Length - 6);
+            //trimmed = trimmed.Substring(0, trimmed.Length - 6);
+            trimmed = trimmed.Substring(0, trimmed.Length - 1);
 
             return trimmed;
         }

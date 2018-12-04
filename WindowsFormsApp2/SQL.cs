@@ -312,10 +312,6 @@ namespace WindowsFormsApp2
             cmd.ExecuteNonQuery();                              //makes the query
             dbConn.Close();
         }
-
-
-
-
     }
 
 

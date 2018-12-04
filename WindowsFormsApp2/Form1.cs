@@ -143,7 +143,6 @@ namespace WindowsFormsApp2
             string value = string.Empty;                             //either process name or URL
             string taskId = string.Empty;
 
-
             if (idt.taskId.Equals(""))                               //undefined events (events with empty task ID) will not be uploaded
                 return;
             else if (!shouldPost(idt, e))                            //post only if more than a certain amount of differences in duration
@@ -411,9 +410,9 @@ namespace WindowsFormsApp2
             //perform sorting
             var sorted = Global.definedTaskIdName.ToList();                         //convert dictionary to a list
 
-            Global.definedTaskIdName.Clear();                                       //clears dictionary
-
             sorted.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));      //sort the list, by comparing the value of each pair
+
+            Global.definedTaskIdName.Clear();                                       //clears dictionary
 
             foreach (KeyValuePair<string, string> t in sorted)                      //insert sorted pair values back into dictionary
             {
