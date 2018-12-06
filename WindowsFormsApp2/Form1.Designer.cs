@@ -143,7 +143,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Font = new System.Drawing.Font("Tahoma", 12.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.Location = new System.Drawing.Point(14, 92);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(88, 13);
@@ -161,7 +161,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.Location = new System.Drawing.Point(12, 187);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(79, 25);
@@ -192,6 +192,7 @@
             // 
             this.button1.Location = new System.Drawing.Point(730, 83);
             this.button1.Name = "button1";
+            this.button1.Font = new System.Drawing.Font("Arial", 8F);
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 2;
             this.button1.Text = "Associations";
@@ -201,6 +202,7 @@
             // button2
             // 
             this.button2.Location = new System.Drawing.Point(730, 54);
+            this.button2.Font = new System.Drawing.Font("Arial", 8F);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 1;
@@ -222,7 +224,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.Font = new System.Drawing.Font("Tahoma", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label10.Location = new System.Drawing.Point(14, 9);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(42, 17);
@@ -232,7 +234,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label11.Font = new System.Drawing.Font("Tahoma", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label11.Location = new System.Drawing.Point(14, 35);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(60, 17);
@@ -243,6 +245,7 @@
             // 
             this.button3.Location = new System.Drawing.Point(730, 112);
             this.button3.Name = "button3";
+            this.button2.Font = new System.Drawing.Font("Arial", 8F);
             this.button3.Size = new System.Drawing.Size(75, 40);
             this.button3.TabIndex = 3;
             this.button3.Text = "Remove Time Entries";
@@ -251,7 +254,7 @@
             // 
             // label12
             // 
-            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.label12.Font = new System.Drawing.Font("Tahoma", 10F);
             this.label12.Location = new System.Drawing.Point(14, 59);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(86, 18);
@@ -333,6 +336,7 @@
             // 
             this.label18.AutoSize = true;
             this.label18.Location = new System.Drawing.Point(612, 196);
+            this.label18.Font = new System.Drawing.Font("Tahoma", 10F);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(118, 13);
             this.label18.TabIndex = 21;
