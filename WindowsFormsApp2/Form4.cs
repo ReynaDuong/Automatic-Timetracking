@@ -135,7 +135,7 @@ namespace WindowsFormsApp2
         }
 
         //add process
-        private void button1_Click(object sender, EventArgs e)          
+        private void AddNewProcessButton_Click(object sender, EventArgs e)          
         {
             try
             {
@@ -209,7 +209,7 @@ namespace WindowsFormsApp2
         {
             if (e.KeyCode == Keys.Enter)
             {
-                button1.PerformClick();
+                AddNewProcessButton.PerformClick();
                 e.SuppressKeyPress = true;
             }
         }
@@ -229,7 +229,7 @@ namespace WindowsFormsApp2
         {
             if (pos.Equals("on"))
             {
-                button1.Enabled = true;
+                AddNewProcessButton.Enabled = true;
                 button2.Enabled = true;
                 button3.Enabled = true;
                 button4.Enabled = true;
@@ -239,7 +239,7 @@ namespace WindowsFormsApp2
             }
             else if (pos.Equals("off"))
             {
-                button1.Enabled = false;
+                AddNewProcessButton.Enabled = false;
                 button2.Enabled = false;
                 button3.Enabled = false;
                 button4.Enabled = false;

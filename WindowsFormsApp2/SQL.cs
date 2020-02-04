@@ -270,12 +270,21 @@ namespace WindowsFormsApp2
             IntializeDB();
             string query = string.Empty;
 
+            // workspace
             if (type == 1)
                 query = "INSERT INTO Workspaces (`Name`, `ID`) VALUES('" + name + "', '" + primary + "')";
             else if (type == 2)
-                query = "INSERT INTO `Projects` (`Name`, `ID`, `workspaceId`) VALUES('" + name + "', '" + primary + "', '" + foreign + "')";
+            {
+                // project
+	            query = "INSERT INTO `Projects` (`Name`, `ID`, `workspaceId`) VALUES('" + name + "', '" + primary +
+	                    "', '" + foreign + "')";
+            }
             else if (type == 3)
-                query = "INSERT INTO `Tasks` (`Name`, `ID`, `projectId`) VALUES ('" + name + "', '" + primary + "', '" + foreign + "')";
+            {
+                // tasks
+	            query = "INSERT INTO `Tasks` (`Name`, `ID`, `projectId`) VALUES ('" + name + "', '" + primary + "', '" +
+	                    foreign + "')";
+            }
 
             MySqlCommand cmd = new MySqlCommand(query, dbConn);
             dbConn.Open();                                      //opens connection

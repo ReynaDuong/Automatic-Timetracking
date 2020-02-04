@@ -56,8 +56,8 @@ namespace WindowsFormsApp2
         //public Form1()
         {
             InitializeComponent();
-            label6.Text = Global.name;
-            label9.Text = "Choose a project to begin session...";
+            userName.Text = Global.name;
+            projectName.Text = "Choose a project to begin session...";
             
             //format
             this.TopMost = true;
@@ -148,7 +148,7 @@ namespace WindowsFormsApp2
             else if (!shouldPost(idt, e))                            //post only if more than a certain amount of differences in duration
                 return;
 
-            i++;
+            i++;                                                    // 
             label7.Text = i.ToString();
 
             if (idt.entryId.Equals(""))                              //POST, empty ID means this event hasn't been posted
@@ -583,7 +583,7 @@ namespace WindowsFormsApp2
 
             if (Global.chosen == 1)
             {
-                label9.Text = Global.projectName;
+                projectName.Text = Global.projectName;
                 label13.Text = Global.workspaceName;
 
                 associateRaw();
@@ -718,8 +718,7 @@ namespace WindowsFormsApp2
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
-
+            // load the form
         }
     }
 }
