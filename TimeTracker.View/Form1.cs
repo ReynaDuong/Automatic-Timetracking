@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 
 namespace TimeTracker.View
@@ -533,6 +534,31 @@ namespace TimeTracker.View
                 listView1.Items[Global.dictionaryEvents[e].listId].SubItems[3].Text = idledTime;
                 listView1.Items[Global.dictionaryEvents[e].listId].SubItems[5].Text = activeTime;
             }
+
+            WriteGlobalEventToFile(e);
+        }
+
+
+        private void WriteGlobalEventToFile(Event e)
+        {
+	        var today = DateTime.Now.Date.ToString("yyyyMMdd");
+	        var fileName = $"Output{today}.csv";
+	        var fileExist = File.Exists(fileName);
+	        var idt = Global.dictionaryEvents[e];
+
+            using (var sw = new StreamWriter(fileName, true))
+	        {
+		        if (!fileExist)
+		        {
+                    sw.WriteLine("TaskId|TaskName|LastPostedTime|Active|TimeStamp");
+		        }
+
+                sw.WriteLine($"{idt.taskId}|" +
+                             $"{idt.taskName}|" +
+                             $"{idt.lastPostedTs}|" +
+                             $"{idt.active}|" +
+                             $"{idt.ts}");
+	        }
         }
 
         //update times in time log

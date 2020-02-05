@@ -79,5 +79,12 @@ namespace TimeTracker.View
 
             return true;
         }//end filter
+
+        public override string ToString()
+        {
+            // TODO: custom output to file here, this is too bad so just make it done quick
+            // the stakeholder does not care about code quality anyway so why should we care
+	        return base.ToString();
+        }
     }
 }
