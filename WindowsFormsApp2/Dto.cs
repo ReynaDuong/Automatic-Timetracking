@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WindowsFormsApp2
 {
@@ -60,10 +56,10 @@ namespace WindowsFormsApp2
         public class EstimateDto
         {
             public string estimate { get; set; }
-            public typeEnum type { get; set; }
+            public TypeEnum type { get; set; }
         }
 
-        public class JSONTIMEENTRY
+        public class Jsontimeentry
         {
             public string start { get; set; }
             public string billable { get; set; }
@@ -126,7 +122,7 @@ namespace WindowsFormsApp2
             public string name { get; set; }
             public string profilePicture { get; set; }
             public UserSettingsDto settings { get; set; }
-            public statusEnum status {get; set;}
+            public StatusEnum status {get; set;}
         }
 
         public class SummaryReportSettingsDto
@@ -145,7 +141,7 @@ namespace WindowsFormsApp2
             public string timeFormat { get; set; }
             public string timeTrackingManual { get; set; }
             public string timeZone { get; set; }
-            public weekEnum weekStart { get; set; }
+            public WeekEnum weekStart { get; set; }
             public string weeklyUpdates { get; set; }
         }
 
@@ -215,24 +211,24 @@ namespace WindowsFormsApp2
             public string name { get; set; }
             public Boolean @new { get; set; }
             public string refreshToken { get; set; }
-            public statusEnum status { get; set; }
+            public StatusEnum status { get; set; }
             public string token { get; set; }
         }
 
-        public enum taskDtoEnum
+        public enum TaskDtoEnum
         {
             ACTIVE,
             DONE
         }
 
-        public enum statusEnum
+        public enum StatusEnum
         {
             ACTIVE,
             PENDING_EMAIL_VERIFICATION,
             DELETED
         }
 
-        public enum weekEnum
+        public enum WeekEnum
         {
             MONDAY,
             TUESDAY,
@@ -243,13 +239,13 @@ namespace WindowsFormsApp2
             SUNDAY
         }
 
-        public enum typeEnum
+        public enum TypeEnum
         {
             AUTO,
             MANUAL
         }
 
-        public enum membershipEnum
+        public enum MembershipEnum
         {
             PENDING,
             ACTIVE,

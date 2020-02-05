@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp2
@@ -17,31 +11,31 @@ namespace WindowsFormsApp2
             InitializeComponent();
 
             //format
-            this.TopMost = true;
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.MinimizeBox = true;
-            this.Activate();
+            TopMost = true;
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            MinimizeBox = true;
+            Activate();
 
             button2.Enabled = false;
 
-            fetch();
+            Fetch();
         }
         
         //fetch projects from all workspaces
-        public void fetch()
+        public void Fetch()
         {
-            int i = 0;
-            int j = 0;
+            var i = 0;
+            var j = 0;
 
-            List<Dto.WorkspaceDto> workspaces = API.getWorkspaces();
-            foreach (Dto.WorkspaceDto w in workspaces)
+            List<Dto.WorkspaceDto> workspaces = Api.GetWorkspaces();
+            foreach (var w in workspaces)
             {
                 treeView1.Nodes.Add(w.name);                    //workspace name
                 treeView1.Nodes[i].Tag = w.id;                  //workspace ID
 
-                List<Dto.ProjectFullDto> projects = API.getProjectsByWorkspaceId(w.id);
-                foreach(Dto.ProjectFullDto p in projects)
+                List<Dto.ProjectFullDto> projects = Api.GetProjectsByWorkspaceId(w.id);
+                foreach(var p in projects)
                 {
                     treeView1.Nodes[i].Nodes.Add(p.name);       //project name
                     treeView1.Nodes[i].Nodes[j].Tag = p.id;     //project ID
@@ -64,19 +58,19 @@ namespace WindowsFormsApp2
             Global.projectName = treeView1.SelectedNode.Text;
 
             Global.chosen = 1;
-            this.Close();
+            Close();
         }
 
 
         private void button1_Click(object sender, EventArgs e)
         {
             treeView1.Nodes.Clear();
-            fetch();
+            Fetch();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void Form3_Load(object sender, EventArgs e)
@@ -88,9 +82,13 @@ namespace WindowsFormsApp2
         {
             //check if child node (level 1 for project)
             if (treeView1.SelectedNode.Level == 1)
-                button2.Enabled = true;
+            {
+	            button2.Enabled = true;
+            }
             else
-                button2.Enabled = false;
+            {
+	            button2.Enabled = false;
+            }
         }
     }
 }

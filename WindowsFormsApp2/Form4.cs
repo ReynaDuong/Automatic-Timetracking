@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp2
 {
     public partial class Form4 : Form
     {
-        public string workspaceID = string.Empty;
-        public string projectID = string.Empty;
-        public string taskID = string.Empty;
+        public string workspaceId = string.Empty;
+        public string projectId = string.Empty;
+        public string taskId = string.Empty;
 
         public string workspaceName = string.Empty;
         public string projectName = string.Empty;
@@ -27,43 +21,43 @@ namespace WindowsFormsApp2
             InitializeComponent();
 
             //format
-            this.TopMost = true;
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.MinimizeBox = true;
-            this.Activate();
+            TopMost = true;
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            MinimizeBox = true;
+            Activate();
 
-            buttonToggle("off");
+            ButtonToggle("off");
 
-            fetchClockify();
+            FetchClockify();
         }
 
         //fetch clockify for workspaces, projects and tasks
-        public void fetchClockify()
+        public void FetchClockify()
         {
             treeView1.HideSelection = false;
 
-            int i = 0;
-            int j = 0;
-            int k = 0;
+            var i = 0;
+            var j = 0;
+            var k = 0;
 
             //iterate workspaces
-            List<Dto.WorkspaceDto> workspaces = API.getWorkspaces();
-            foreach (Dto.WorkspaceDto w in workspaces)
+            List<Dto.WorkspaceDto> workspaces = Api.GetWorkspaces();
+            foreach (var w in workspaces)
             {
                 treeView1.Nodes.Add(w.name);                                //workspace name
                 treeView1.Nodes[i].Tag = w.id;                              //workspace ID
 
                 //iterate projects
-                List<Dto.ProjectFullDto> projects = API.getProjectsByWorkspaceId(w.id);
-                foreach (Dto.ProjectFullDto p in projects)
+                List<Dto.ProjectFullDto> projects = Api.GetProjectsByWorkspaceId(w.id);
+                foreach (var p in projects)
                 {
                     treeView1.Nodes[i].Nodes.Add(p.name);                   //project name
                     treeView1.Nodes[i].Nodes[j].Tag = p.id;                 //project ID
 
                     //iterate tasks
-                    List<Dto.TaskDto> tasks = API.getTasksByProjectId(w.id, p.id);
-                    foreach (Dto.TaskDto t in tasks)
+                    List<Dto.TaskDto> tasks = Api.GetTasksByProjectId(w.id, p.id);
+                    foreach (var t in tasks)
                     {
                         treeView1.Nodes[i].Nodes[j].Nodes.Add(t.name);      //task name
                         treeView1.Nodes[i].Nodes[j].Nodes[k].Tag = t.id;    //task ID
@@ -86,21 +80,21 @@ namespace WindowsFormsApp2
             //check if child node (level 2 for tasks)
             if (treeView1.SelectedNode.Level == 2)
             {
-                workspaceID = treeView1.SelectedNode.Parent.Parent.Tag.ToString();
-                projectID = treeView1.SelectedNode.Parent.Tag.ToString();
-                taskID = treeView1.SelectedNode.Tag.ToString();
+                workspaceId = treeView1.SelectedNode.Parent.Parent.Tag.ToString();
+                projectId = treeView1.SelectedNode.Parent.Tag.ToString();
+                taskId = treeView1.SelectedNode.Tag.ToString();
 
                 workspaceName = treeView1.SelectedNode.Parent.Parent.Text;
                 projectName = treeView1.SelectedNode.Parent.Text;
                 taskName = treeView1.SelectedNode.Text;
 
 
-                loadListboxes();
-                buttonToggle("on");
+                LoadListboxes();
+                ButtonToggle("on");
             }
             else
             {
-                buttonToggle("off");
+                ButtonToggle("off");
                 listBox1.Items.Clear();
                 listBox2.Items.Clear();
             }
@@ -109,7 +103,7 @@ namespace WindowsFormsApp2
         }
 
         //load processes and urls associations from database for selected task in the tree
-        private void loadListboxes()
+        private void LoadListboxes()
         {
             listBox1.BeginUpdate();
             listBox2.BeginUpdate();
@@ -117,15 +111,15 @@ namespace WindowsFormsApp2
             listBox1.Items.Clear();
             listBox2.Items.Clear();
 
-            List<string> processes = SQL.loadProcesses(taskID);
-            List<string> urls = SQL.loadUrls(taskID);
+            var processes = Sql.LoadProcesses(taskId);
+            var urls = Sql.LoadUrls(taskId);
 
-            foreach (string ps in processes)
+            foreach (var ps in processes)
             {
                 listBox1.Items.Add(ps);
             }
 
-            foreach (string url in urls)
+            foreach (var url in urls)
             {
                 listBox2.Items.Add(url);
             }
@@ -139,14 +133,14 @@ namespace WindowsFormsApp2
         {
             try
             {
-                SQL.insertRule(1, textBox1.Text.Trim().ToLower(), workspaceID, projectID, taskID, workspaceName, projectName, taskName);
+                Sql.InsertRule(1, textBox1.Text.Trim().ToLower(), workspaceId, projectId, taskId, workspaceName, projectName, taskName);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
             
-            loadListboxes();    //reload associations
+            LoadListboxes();    //reload associations
             textBox1.Clear();
             textBox1.Focus();
         }
@@ -156,14 +150,14 @@ namespace WindowsFormsApp2
         {
             try
             {
-                SQL.insertRule(2, textBox2.Text.Trim().ToLower(), workspaceID, projectID, taskID, workspaceName, projectName, taskName);
+                Sql.InsertRule(2, textBox2.Text.Trim().ToLower(), workspaceId, projectId, taskId, workspaceName, projectName, taskName);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
 
-            loadListboxes();
+            LoadListboxes();
             textBox2.Clear();
             textBox2.Focus();
         }
@@ -172,7 +166,7 @@ namespace WindowsFormsApp2
         private void button2_Click(object sender, EventArgs e)
         {
             //in case of null string
-            string value = string.Empty;
+            var value = string.Empty;
             try
             {
                 value = listBox1.SelectedItem.ToString().ToLower();
@@ -182,9 +176,9 @@ namespace WindowsFormsApp2
                 return;
             }
             
-           SQL.delete(1, value, taskID);
+           Sql.Delete(1, value, taskId);
             
-            loadListboxes();
+            LoadListboxes();
         }
 
         //remove url
@@ -199,9 +193,9 @@ namespace WindowsFormsApp2
                 return;
             }
 
-            SQL.delete(2, value, taskID);
+            Sql.Delete(2, value, taskId);
 
-            loadListboxes();
+            LoadListboxes();
         }
 
         //textbox for new process
@@ -225,7 +219,7 @@ namespace WindowsFormsApp2
         }
 
         //graying out buttons and textboxes
-        public void buttonToggle(string pos)
+        public void ButtonToggle(string pos)
         {
             if (pos.Equals("on"))
             {
@@ -265,17 +259,17 @@ namespace WindowsFormsApp2
             {
                 MessageBox.Show("Please choose a project to begin session.");
 
-                this.Close();
+                Close();
                 return;
             }
 
             Global.chosen = 1;
-            this.Close();
+            Close();
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)

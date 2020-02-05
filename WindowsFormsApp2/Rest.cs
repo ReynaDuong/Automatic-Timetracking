@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Net;
-using System.Windows.Forms;
 
 namespace WindowsFormsApp2
 {
-    public enum httpVerb
+    public enum HttpVerb
     {
         GET,
         POST,
@@ -17,38 +13,40 @@ namespace WindowsFormsApp2
     }
     public enum AuthenticationType
     {
-        Basic
+        BASIC
     }
     class Rest
     {
         public string endpoint { get; set; }
-        public httpVerb httpMethod { get; set; }
-        public string Token { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public AuthenticationType AuthType { get; set; }
+        public HttpVerb httpMethod { get; set; }
+        public string token { get; set; }
+        public string username { get; set; }
+        public string password { get; set; }
+        public AuthenticationType authType { get; set; }
         public string body { get; set; }
 
 
         public string MakeRequest()
         {
-            string StrResponseValue = String.Empty;
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(endpoint);
+            var strResponseValue = String.Empty;
+            var request = (HttpWebRequest)WebRequest.Create(endpoint);
             request.Method = httpMethod.ToString();
             HttpWebResponse response = null;
           //    string AuthHeader = System.Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(APIKEY));
-            if(Token != String.Empty)
-                request.Headers.Add("X-Auth-Token", Token);
+            if(token != String.Empty)
+            {
+	            request.Headers.Add("X-Auth-Token", token);
+            }
 
             if( (request.Method == "POST" || request.Method == "PUT") && body != String.Empty)
             {
                 request.ContentType = "application/json";
                 //request.Headers.Add("x-api-key", "W71Y8LB5hwFG+dza");
                 //MessageBox.Show(request.ContentType);
-                using (StreamWriter swJSONPayload = new StreamWriter(request.GetRequestStream()))       //write 'body' into 'request'
+                using (var swJsonPayload = new StreamWriter(request.GetRequestStream()))       //write 'body' into 'request'
                 {
-                    swJSONPayload.Write(body);
-                    swJSONPayload.Close();
+                    swJsonPayload.Write(body);
+                    swJsonPayload.Close();
                 }
             }
 
@@ -56,13 +54,13 @@ namespace WindowsFormsApp2
             {
                 response = (HttpWebResponse)request.GetResponse();                                      //make the request
 
-                    using (Stream ResponseStream = response.GetResponseStream())
+                    using (var responseStream = response.GetResponseStream())
                     {
-                        if (ResponseStream != null)
+                        if (responseStream != null)
                         {
-                            using (StreamReader Reader = new StreamReader(ResponseStream))
+                            using (var reader = new StreamReader(responseStream))
                             {
-                                StrResponseValue = Reader.ReadToEnd();
+                                strResponseValue = reader.ReadToEnd();
                             }
                         }
                     }
@@ -70,10 +68,13 @@ namespace WindowsFormsApp2
             catch (Exception e)
             {
                 if (e.Message.ToString().Contains("500"))
-                    StrResponseValue = "Error: Wrong API KEY" ;
+                {
+	                strResponseValue = "Error: Wrong API KEY" ;
+                }
                 else
-                StrResponseValue = "Error:" + e.Message.ToString();
-
+                {
+	                strResponseValue = "Error:" + e.Message.ToString();
+                }
             }
             finally
             {
@@ -82,7 +83,7 @@ namespace WindowsFormsApp2
                     ((IDisposable)response).Dispose();
                 }
             }
-                return StrResponseValue;
+                return strResponseValue;
         }
         
     }

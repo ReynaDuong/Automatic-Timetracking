@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Automation;
-using System.Windows.Forms;
 
 namespace WindowsFormsApp2
 {
@@ -29,67 +23,64 @@ namespace WindowsFormsApp2
 
 		//requirement for retreiving the last input tick
 		[DllImport("User32.dll")]
-		private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+		private static extern bool GetLastInputInfo(ref Lastinputinfo plii);
 
-		internal struct LASTINPUTINFO
+		internal struct Lastinputinfo
 		{
 			public uint cbSize;
 			public uint dwTime;
 		}
 
 		//get last tick count
-		public static uint getLastTick()
+		public static uint GetLastTick()
 		{
-			LASTINPUTINFO lastInput = new LASTINPUTINFO();
+			var lastInput = new Lastinputinfo();
 
-			lastInput.cbSize = (uint) System.Runtime.InteropServices.Marshal.SizeOf(lastInput);
+			lastInput.cbSize = (uint) Marshal.SizeOf(lastInput);
 			lastInput.dwTime = 0;
 
 			if (GetLastInputInfo(ref lastInput)) //if succeed, return last input tick count
+			{
 				return lastInput.dwTime;
+			}
 
 			return 0;
 		}
 
 		//get current active window title
-		public static string getWintitle(IntPtr handle)
+		public static string GetWinTitle(IntPtr handle)
 		{
-			int titleLength = GetWindowTextLength(handle) + 1;
-			StringBuilder sb = new StringBuilder(titleLength);
+			var titleLength = GetWindowTextLength(handle) + 1;
+			var sb = new StringBuilder(titleLength);
 			GetWindowText(handle, sb, titleLength);
 
 			return sb.ToString();
 		}
 
 		//get process name
-		public static string getPsName(IntPtr handle)
+		public static string GetPsName(IntPtr handle)
 		{
 			uint pid = 0;
 			GetWindowThreadProcessId(handle, out pid);
-			Process p = Process.GetProcessById((int) pid);
+			var p = Process.GetProcessById((int) pid);
 			return p.ProcessName.ToLower();
 		}
 
-		public static void getAll(out string winTitle, out string psName, out string URL)
+		public static void GetAll(out string winTitle, out string psName, out string url)
 		{
 			try
 			{
 				//foreground window
-				IntPtr handle = GetForegroundWindow();
+				var handle = GetForegroundWindow();
 
 				//foreground window title
-				winTitle = getWintitle(handle);
+				winTitle = GetWinTitle(handle);
 
 				//process name
-				psName = getPsName(handle);
+				psName = GetPsName(handle);
 
 				//URL of foreground window
-				if (psName.Equals("chrome"))
-				{
-					URL = GetUrl.fromChromeTitle(winTitle, handle);
-				}
-				else
-					URL = "";
+				url = psName.Equals("chrome") ? GetUrl.FromChromeTitle(winTitle, handle) : "";
 
 				return;
 			}
@@ -97,7 +88,7 @@ namespace WindowsFormsApp2
 			{
 				winTitle = "ignore";
 				psName = "ignore";
-				URL = "ignore";
+				url = "ignore";
 				return;
 			}
 		}
