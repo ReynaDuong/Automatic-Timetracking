@@ -525,19 +525,19 @@ namespace TimeTracker.View
 		//update listView
 		private void HistoryUpdate(int newItem, Event e)
 		{
-			var tasks = new List<Task>();
+			var tasks = new[]
+			{
+				new Task(() => WriteGlobalEventToScreen(newItem, e)),
+				new Task(() => WriteGlobalEventToFile(e)),
+				new Task(() => WriteGlobalEventToDatabase(e))
+			};
 
-			var writeScreenTask = new Task(() => WriteGlobalEventToScreen(newItem, e));
-			var writeFileTask = new Task(() => WriteGlobalEventToFile(e));
-			var writeDbTask = new Task(() => WriteGlobalEventToDatabase(e));
+			foreach (var task in tasks)
+			{
+				task.Start();
+			}
 
-			tasks.AddRange(new[]{writeScreenTask, writeFileTask, writeDbTask});
-
-			writeScreenTask.Start();
-			writeFileTask.Start();
-			writeDbTask.Start();
-
-			Task.WaitAll(tasks.ToArray());
+			Task.WaitAll(tasks);
 		}
 
 
