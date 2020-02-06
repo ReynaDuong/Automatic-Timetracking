@@ -36,13 +36,9 @@ namespace TimeTracker.View
 		Stopwatch _stopwatch = new Stopwatch();
 		TimeSpan _ts = new TimeSpan();
 
-		Mutex
-			_pollMutex =
-				new Mutex(); //prevent from polling when choosing project/associations/deleting time entries, etc..
+		Mutex _pollMutex = new Mutex(); //prevent from polling when choosing project/associations/deleting time entries, etc..
 
-		Mutex
-			_idleMonitorMutex =
-				new Mutex(); //protects 'idleSeconds' being written by posting/monitoring threads at the same time
+		Mutex _idleMonitorMutex = new Mutex(); //protects 'idleSeconds' being written by posting/monitoring threads at the same time
 
 		Mutex _startPollingMutex = new Mutex(); //same for posting thread
 		Mutex _startIdleMonMutex = new Mutex(); //halt idle monitoring thread until project is selected 
@@ -52,33 +48,40 @@ namespace TimeTracker.View
 		public Form1()
 			//public Form1()
 		{
-			InitializeComponent();
-			userName.Text = Global.name;
-			projectName.Text = "Choose a project to begin session...";
+			try
+			{
+				InitializeComponent();
+				userName.Text = Global.name;
+				projectName.Text = "Choose a project to begin session...";
 
-			//format
-			TopMost = true;
-			FormBorderStyle = FormBorderStyle.FixedSingle;
-			MaximizeBox = false;
-			MinimizeBox = true;
-			CenterToScreen();
-			HideLabels();
+				//format
+				TopMost = true;
+				FormBorderStyle = FormBorderStyle.FixedSingle;
+				MaximizeBox = false;
+				MinimizeBox = true;
+				CenterToScreen();
+				HideLabels();
 
-			//wait until a project is selected
-			_startPollingMutex.WaitOne();
-			_startIdleMonMutex.WaitOne();
+				//wait until a project is selected
+				_startPollingMutex.WaitOne();
+				_startIdleMonMutex.WaitOne();
 
-			//polling thread
-			Thread pollingThread;
-			pollingThread = new Thread(StartPolling);
-			pollingThread.IsBackground = true;
-			pollingThread.Start();
+				//polling thread
+				Thread pollingThread;
+				pollingThread = new Thread(StartPolling);
+				pollingThread.IsBackground = true;
+				pollingThread.Start();
 
-			//idle monitor
-			Thread idleMonitor;
-			idleMonitor = new Thread(StartIdleMonitoring);
-			idleMonitor.IsBackground = true;
-			idleMonitor.Start();
+				//idle monitor
+				Thread idleMonitor;
+				idleMonitor = new Thread(StartIdleMonitoring);
+				idleMonitor.IsBackground = true;
+				idleMonitor.Start();
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show(e.StackTrace);
+			}
 		}
 
 		//thread to poll
@@ -687,6 +690,7 @@ namespace TimeTracker.View
 		//thread to monitor idle
 		private void StartIdleMonitoring()
 		{
+			// TODO: will blow up if running as Debug mode within VS and try to record itself
 			_startIdleMonMutex.WaitOne(-1, false);
 			uint currentTick = 0;
 			uint lastTick = 0;
@@ -742,6 +746,9 @@ namespace TimeTracker.View
 
 				_idleMonitorMutex.ReleaseMutex();
 			}
+			
+//			_startIdleMonMutex.ReleaseMutex();
+
 		}
 
 		private void ResetIdle()
