@@ -580,23 +580,39 @@ namespace TimeTracker.View
 
 		private void WriteGlobalEventToFile(Event e)
 		{
-			var today = DateTime.Now.Date.ToString("yyyyMMdd");
+			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
 			var fileName = $"Output{today}.csv";
 			var fileExist = File.Exists(fileName);
 			var idt = Global.dictionaryEvents[e];
+
+			var elapsedTime = string.Format("{0:00}:{1:00}:{2:00}", idt.ts.Hours, idt.ts.Minutes, idt.ts.Seconds);
+			var idledTime = string.Format("{0:00}:{1:00}:{2:00}", idt.idle.Hours, idt.idle.Minutes, idt.idle.Seconds);
+			var activeTime = string.Format("{0:00}:{1:00}:{2:00}", idt.active.Hours, idt.active.Minutes,
+				idt.active.Seconds);
+
+			//lv.SubItems.Add(e.url);
+			//lv.SubItems.Add(elapsedTime);
+			//lv.SubItems.Add(idledTime);
+			//lv.SubItems.Add(idt.taskName);
+			//lv.SubItems.Add(activeTime);
 
 			using (var sw = new StreamWriter(fileName, true))
 			{
 				if (!fileExist)
 				{
-					sw.WriteLine("TaskId|TaskName|LastPostedTime|Active|TimeStamp");
+					//sw.WriteLine("TaskId | TaskName | LastPostedTime | Active | TimeStamp");
+					sw.WriteLine("Process | elapsedTime | idledTime | activeTime | url | name");
 				}
 
-				sw.WriteLine($"{idt.taskId}|" +
-				             $"{idt.taskName}|" +
-				             $"{idt.lastPostedTs}|" +
-				             $"{idt.active}|" +
-				             $"{idt.ts}");
+				sw.Write($"{e.process} | ");
+				sw.Write($"{elapsedTime} | ");
+				sw.Write($"{idledTime} | ");
+				sw.Write($"{activeTime} | ");
+				if(!String.IsNullOrEmpty(e.url))
+					sw.Write($"{e.url} | ");
+				if(!String.IsNullOrEmpty(_winTitle))
+					sw.Write($"{_winTitle}");
+				sw.Write($"\n");
 			}
 		}
 
@@ -796,6 +812,11 @@ namespace TimeTracker.View
 				label28.Visible = true;
 				label29.Visible = true;
 			}
+		}
+
+		private void label19_Click(object sender, EventArgs e)
+		{
+
 		}
 
 		private void button4_Click(object sender, EventArgs e)
