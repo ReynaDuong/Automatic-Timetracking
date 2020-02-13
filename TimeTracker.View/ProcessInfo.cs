@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -7,6 +10,8 @@ namespace TimeTracker.View
 {
 	class ProcessInfo
 	{
+		private const string Dllname = "user32.dll";
+
 		//foreground window requirements
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		static extern IntPtr GetForegroundWindow();
@@ -17,18 +22,46 @@ namespace TimeTracker.View
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		static extern int GetWindowTextLength(IntPtr hWnd);
 
-		//requirement for retreiving PID from handle
+		//requirement for retrieving PID from handle
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
-		//requirement for retreiving the last input tick
-		[DllImport("User32.dll")]
+		//requirement for retrieving the last input tick
+		[DllImport(Dllname)]
 		private static extern bool GetLastInputInfo(ref Lastinputinfo plii);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool GetWindowRect(out Rect lpRect);
 
 		internal struct Lastinputinfo
 		{
 			public uint cbSize;
 			public uint dwTime;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		private struct Rect
+		{
+			int left, top, right, bottom;
+
+			public Rectangle ToRectangle()
+			{
+				return new Rectangle(left, top, right - left, bottom - top);
+			}
+		}
+
+		[DllImport(Dllname, SetLastError = true)]
+		public static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, String className, String windowTitle);
+
+		[DllImport(Dllname)]
+		private static extern bool GetClientRect(IntPtr hWnd, out Rect lpRect);
+
+		public static Rectangle GetClientRect(IntPtr hWnd)
+		{
+			var nativeRect = new Rect();
+			GetClientRect(hWnd, out nativeRect);
+			return nativeRect.ToRectangle();
 		}
 
 		//get last tick count
@@ -90,6 +123,30 @@ namespace TimeTracker.View
 				psName = "ignore";
 				url = "ignore";
 				return;
+			}
+		}
+
+		public static void CaptureActiveWindowScreenShot(string filePath, string fileName, ImageFormat format)
+		{
+			// todo: implement to capture the current active screen
+			var groundHandle = GetForegroundWindow();
+			var winTitle = GetWinTitle(groundHandle);
+
+			var handle = FindWindowEx(IntPtr.Zero, IntPtr.Zero, String.Empty, winTitle);
+			Rectangle bounds = GetClientRect(handle);
+
+			using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
+			{
+				using (Graphics g = Graphics.FromImage(bitmap))
+				{
+					g.CopyFromScreen(new Point(bounds.Left, bounds.Top), Point.Empty, bounds.Size);
+				}
+
+				fileName = Path.Combine(filePath, $"{fileName}.jpeg");
+
+				Console.WriteLine($"Save the image to '{fileName}'");
+
+				bitmap.Save(fileName, ImageFormat.Jpeg);
 			}
 		}
 	}

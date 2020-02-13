@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
+using System.Drawing.Imaging;
+using TimeTracker.Core;
 
 namespace TimeTracker.View
 {
@@ -55,7 +58,6 @@ namespace TimeTracker.View
 				projectName.Text = "Choose a project to begin session...";
 
 				//format
-				TopMost = true;
 				FormBorderStyle = FormBorderStyle.FixedSingle;
 				MaximizeBox = false;
 				MinimizeBox = true;
@@ -117,7 +119,6 @@ namespace TimeTracker.View
 						label2.Text = _prevPs;
 						label4.Text = _prevUrl;
 					}
-
 					_pollMutex.ReleaseMutex();
 				} //end while
 			}
@@ -126,6 +127,17 @@ namespace TimeTracker.View
 				MessageBox.Show(ex.ToString());
 			}
 		} //end polling thread
+
+
+		// capture the current active window
+		private void CaptureCurrentWindow ()
+		{
+			// todo: capture the fucking window
+			string path = ".";
+			var today = DateTime.Now;
+			string fileName = $"{_psName}_{today.ToString("yyyyMMddhhmmss")}";
+			ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, ImageFormat.Jpeg);
+		}
 
 		//post or update time entries
 		public void TimeEntriesPost(Event e)
@@ -600,6 +612,8 @@ namespace TimeTracker.View
 			}
 		}
 
+		
+
 		//update times in time log
 		private void TaskTimeLogUpdate(Event e)
 		{
@@ -694,21 +708,22 @@ namespace TimeTracker.View
 			_startIdleMonMutex.WaitOne(-1, false);
 			uint currentTick = 0;
 			uint lastTick = 0;
+			bool captured = false;
 
 			while (true)
 			{
 				_idleMonitorMutex.WaitOne();
 				Thread.Sleep(50);
 
-				currentTick = (uint) Environment.TickCount; //current tick count
-				lastTick = ProcessInfo.GetLastTick(); //last input tick count
+				currentTick = (uint) Environment.TickCount;			//current tick count
+				lastTick = ProcessInfo.GetLastTick();				//last input tick count
 
 				if (lastTick == 0) //fails to get tick
 				{
 					continue;
 				}
 
-				_seconds = (currentTick - lastTick) / 1000; //convert to seconds
+				_seconds = (currentTick - lastTick) / 1000;			//convert to seconds
 				if (_seconds >= MinIdleSeconds)
 				{
 					if (_idling == false)
@@ -717,7 +732,7 @@ namespace TimeTracker.View
 						_idledAt = _stopwatch.Elapsed.TotalSeconds;
 					}
 				}
-				else if (_idling == true)
+				else if (_idling)
 				{
 					_idling = false;
 					_idleContinued += _stopwatch.Elapsed.TotalSeconds - _idledAt;
@@ -727,8 +742,13 @@ namespace TimeTracker.View
 				if (_seconds >= MinIdleSeconds && _idling == true)
 				{
 					_idleSeconds = _idleContinued + (_stopwatch.Elapsed.TotalSeconds - _idledAt);
-				}
 
+					if (_idleSeconds >= 5 && captured == false)
+					{
+						CaptureCurrentWindow();
+						captured = true;
+					}
+				}
 
 				if (_idleDebug == 1)
 				{
