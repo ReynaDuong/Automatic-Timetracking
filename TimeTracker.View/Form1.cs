@@ -130,13 +130,14 @@ namespace TimeTracker.View
 
 
 		// capture the current active window
-		private void CaptureCurrentWindow ()
+		private void CaptureCurrentWindow (string windowTitle)
 		{
 			// todo: capture the fucking window
-			string path = ".";
+			string path = "./Captures/";
 			var today = DateTime.Now;
 			string fileName = $"{_psName}_{today.ToString("yyyyMMddhhmmss")}";
-			ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, ImageFormat.Jpeg);
+			ProcessInfo.CaptureEntireWindowScreenShot(path, fileName, ImageFormat.Jpeg);
+//			ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, windowTitle);
 		}
 
 		//post or update time entries
@@ -709,11 +710,17 @@ namespace TimeTracker.View
 			uint currentTick = 0;
 			uint lastTick = 0;
 			bool captured = false;
+			const int idleSecondElapsedToCapture = 5;
 
 			while (true)
 			{
 				_idleMonitorMutex.WaitOne();
 				Thread.Sleep(50);
+
+				if (_idleSeconds < 1)
+				{
+					captured = false;
+				}
 
 				currentTick = (uint) Environment.TickCount;			//current tick count
 				lastTick = ProcessInfo.GetLastTick();				//last input tick count
@@ -742,10 +749,10 @@ namespace TimeTracker.View
 				if (_seconds >= MinIdleSeconds && _idling == true)
 				{
 					_idleSeconds = _idleContinued + (_stopwatch.Elapsed.TotalSeconds - _idledAt);
-
-					if (_idleSeconds >= 5 && captured == false)
+					
+					if (_idleSeconds > idleSecondElapsedToCapture && !captured)
 					{
-						CaptureCurrentWindow();
+						CaptureCurrentWindow(_psName);
 						captured = true;
 					}
 				}
