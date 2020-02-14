@@ -108,7 +108,7 @@ namespace TimeTracker.View
 			uint pid = 0;
 			GetWindowThreadProcessId(handle, out pid);
 			var p = Process.GetProcessById((int) pid);
-			return p.ProcessName.ToLower();
+			return p.ProcessName;
 		}
 
 		public static void GetAll(out string winTitle, out string psName, out string url)
@@ -138,9 +138,18 @@ namespace TimeTracker.View
 			}
 		}
 
-		public static void CaptureActiveWindowScreenShot(string filePath, string fileName, string applicationName,
-			string windowsTitle)
+		public static void CaptureActiveWindowScreenShot(string filePath, string fileName, string applicationName, string windowsTitle)
 		{
+			Console.WriteLine($"Application name = {applicationName}");
+			Console.WriteLine($"Windows title = {windowsTitle}");
+
+//			var processes = Process.GetProcesses();
+//			
+//			foreach(var process in processes)
+//			{
+//				Console.WriteLine(process);
+//			}
+
 			// get target process
 			var process = Process.GetProcesses()
 				.FirstOrDefault(p => p.ProcessName.Equals(applicationName) && p.MainWindowTitle.Equals(windowsTitle));
@@ -165,6 +174,8 @@ namespace TimeTracker.View
 
 				fileName = Path.Combine(filePath, $"{fileName}.jpeg");
 
+				Console.WriteLine($"Captured to {fileName}");
+
 				bitmap.Save(fileName, ImageFormat.Jpeg);
 			}
 		}
@@ -179,6 +190,8 @@ namespace TimeTracker.View
 				}
 
 				fileName = Path.Combine(filePath, $"{fileName}.jpeg");
+				
+				Console.WriteLine($"Captured to {fileName}");
 
 				bitmap.Save(fileName, ImageFormat.Jpeg);
 			}
