@@ -7,9 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenQA.Selenium;
 using System.Drawing.Imaging;
-using TimeTracker.Core;
 
 namespace TimeTracker.View
 {
@@ -132,9 +130,9 @@ namespace TimeTracker.View
 		// capture the current active window
 		private void CaptureCurrentWindow (string applicationName, string windowName)
 		{
-			string path = "./Captures/";
+			var path = "./Captures/";
 			var today = DateTime.Now;
-			string fileName = $"{_psName}_{today.ToString("yyyyMMddhhmmss")}";
+			var fileName = $"{_psName}_{today.ToString("yyyyMMddhhmmss")}";
 
 			Directory.CreateDirectory(path);
 
@@ -154,36 +152,33 @@ namespace TimeTracker.View
 			var start = DateTime.Today.AddHours(6.0); //adds 6 hours for central time
 			DateTime end;
 
-			var description = string.Empty;
-			var entryId = string.Empty;
-			var value = string.Empty; //either process name or URL
-			var taskId = string.Empty;
+			string description;
+			string taskId;
 
 			if (idt.taskId.Equals("")) //undefined events (events with empty task ID) will not be uploaded
 			{
 				return;
 			}
-			else if (!ShouldPost(idt, e)) //post only if more than a certain amount of differences in duration
+
+			if (!ShouldPost(idt, e)) //post only if more than a certain amount of differences in duration
 			{
 				return;
 			}
 
-			_i++; // 
+			_i++; 
 			label7.Text = _i.ToString();
 
 			if (idt.entryId.Equals("")) //POST, empty ID means this event hasn't been posted
 			{
-				if (e.process.Equals("chrome"))
+				if (e.process.Equals("chrome", StringComparison.InvariantCultureIgnoreCase))
 				{
 					description = e.url;
-					value = e.url;
 					taskId = idt.taskId;
 				}
 
 				else
 				{
 					description = e.process;
-					value = e.process;
 					taskId = idt.taskId;
 				}
 
@@ -195,20 +190,18 @@ namespace TimeTracker.View
 			}
 			else //PUT   
 			{
-				if (e.process.Equals("chrome"))
+				if (e.process.Equals("chrome", StringComparison.InvariantCultureIgnoreCase))
 				{
 					description = e.url;
-					value = e.url;
 					taskId = idt.taskId;
 				}
 				else
 				{
 					description = e.process;
-					value = e.process;
 					taskId = idt.taskId;
 				}
 
-				entryId = idt.entryId;
+				var entryId = idt.entryId;
 				end = DateTime.Parse(idt.active.ToString()).AddHours(6.0);
 				Api.UpdateTimeEntry(start, end, description, entryId, Global.workspaceId, Global.projectId, taskId);
 			}
@@ -711,7 +704,7 @@ namespace TimeTracker.View
 			_startIdleMonMutex.WaitOne(-1, false);
 			uint currentTick = 0;
 			uint lastTick = 0;
-			bool captured = false;
+			var captured = false;
 			const int idleSecondElapsedToCapture = 3;
 
 			while (true)

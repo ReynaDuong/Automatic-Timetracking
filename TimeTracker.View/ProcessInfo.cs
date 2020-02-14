@@ -33,12 +33,6 @@ namespace TimeTracker.View
 		[DllImport(Dllname)]
 		private static extern bool GetLastInputInfo(ref Lastinputinfo plii);
 
-		[DllImport("user32.dll")]
-		private static extern bool GetWindowRect(IntPtr hWnd, Rectangle rect);
-
-		[DllImport("User32.Dll")]
-		public static extern int FindWindow(string lpClassName, string lpWindowName);
-
 
 		internal struct Lastinputinfo
 		{
@@ -56,10 +50,6 @@ namespace TimeTracker.View
 				return new Rectangle(left, top, right - left, bottom - top);
 			}
 		}
-
-		[DllImport(Dllname, SetLastError = true)]
-		public static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, String className,
-			String windowTitle);
 
 		[DllImport(Dllname)]
 		private static extern bool GetClientRect(IntPtr hWnd, out Rect lpRect);
@@ -142,13 +132,6 @@ namespace TimeTracker.View
 		{
 			Console.WriteLine($"Application name = {applicationName}");
 			Console.WriteLine($"Windows title = {windowsTitle}");
-
-//			var processes = Process.GetProcesses();
-//			
-//			foreach(var process in processes)
-//			{
-//				Console.WriteLine(process);
-//			}
 
 			// get target process
 			var process = Process.GetProcesses()
