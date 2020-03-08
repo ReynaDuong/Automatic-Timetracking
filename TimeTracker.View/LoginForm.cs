@@ -5,9 +5,9 @@ using System.Windows.Forms;
 
 namespace TimeTracker.View
 {
-    public partial class Form2 : Form
+    public partial class LoginForm : Form
     {
-        public Form2()
+        public LoginForm()
         {
             InitializeComponent();
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -48,7 +48,7 @@ namespace TimeTracker.View
 
 
 
-            var obj = new Form1();
+            var obj = new MainTrackerForm();
             Hide();
             obj.Closed += (s, args) => Close();
             obj.Closed += (s, args) => Dispose();

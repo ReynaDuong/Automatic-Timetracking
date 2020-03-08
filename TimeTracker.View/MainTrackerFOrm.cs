@@ -11,7 +11,7 @@ using System.Drawing.Imaging;
 
 namespace TimeTracker.View
 {
-	public partial class Form1 : Form
+	public partial class MainTrackerForm : Form
 	{
 		int _idleDebug = 0;
 
@@ -46,7 +46,7 @@ namespace TimeTracker.View
 
 		int _i, _j, _k = 0;
 
-		public Form1()
+		public MainTrackerForm()
 			//public Form1()
 		{
 			try
@@ -659,7 +659,7 @@ namespace TimeTracker.View
 			_pollMutex.WaitOne(); //prevent inserting into dictionary while making association changes
 			_idleMonitorMutex.WaitOne();
 
-			var f = new Form4();
+			var f = new TaskAssociationForm();
 			f.StartPosition = FormStartPosition.CenterParent;
 			f.ShowDialog(this);
 
@@ -679,7 +679,7 @@ namespace TimeTracker.View
 			_pollMutex.WaitOne(); //prevent inserting into dictionary while making association changes
 			_idleMonitorMutex.WaitOne();
 
-			var f = new Form3();
+			var f = new ProjectSelectionForm();
 			f.StartPosition = FormStartPosition.CenterParent;
 			f.ShowDialog(this);
 

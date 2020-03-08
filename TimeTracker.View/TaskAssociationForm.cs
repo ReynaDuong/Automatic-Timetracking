@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace TimeTracker.View
 {
-    public partial class Form4 : Form
+    public partial class TaskAssociationForm : Form
     {
         public string workspaceId = string.Empty;
         public string projectId = string.Empty;
@@ -16,7 +16,7 @@ namespace TimeTracker.View
 
         public string value = string.Empty;
 
-        public Form4()
+        public TaskAssociationForm()
         {
             InitializeComponent();
 

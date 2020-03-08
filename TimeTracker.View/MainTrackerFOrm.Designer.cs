@@ -1,6 +1,6 @@
 ﻿namespace TimeTracker.View
 {
-    partial class Form1
+    partial class MainTrackerForm
     {
         /// <summary>
         /// Required designer variable.

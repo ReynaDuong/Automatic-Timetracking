@@ -1,6 +1,6 @@
 ﻿namespace TimeTracker.View
 {
-    partial class Form3
+    partial class ProjectSelectionForm
     {
         /// <summary>
         /// Required designer variable.

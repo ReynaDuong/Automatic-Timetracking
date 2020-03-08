@@ -4,9 +4,9 @@ using System.Windows.Forms;
 
 namespace TimeTracker.View
 {
-    public partial class Form3 : Form
+    public partial class ProjectSelectionForm : Form
     {
-        public Form3()
+        public ProjectSelectionForm()
         {
             InitializeComponent();
 
