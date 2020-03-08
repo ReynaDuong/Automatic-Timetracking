@@ -539,8 +539,7 @@ namespace TimeTracker.View
 			var tasks = new[]
 			{
 				new Task(() => WriteGlobalEventToScreen(newItem, e)),
-				new Task(() => WriteGlobalEventToFile(e)),
-				new Task(() => WriteGlobalEventToDatabase(e))
+				new Task(() => WriteGlobalEventToFile(e))
 			};
 
 			foreach (var task in tasks)
@@ -555,10 +554,9 @@ namespace TimeTracker.View
 		private void WriteGlobalEventToScreen(int newItem, Event e)
 		{
 			var idt = Global.dictionaryEvents[e];
-			var elapsedTime = string.Format("{0:00}:{1:00}:{2:00}", idt.ts.Hours, idt.ts.Minutes, idt.ts.Seconds);
-			var idledTime = string.Format("{0:00}:{1:00}:{2:00}", idt.idle.Hours, idt.idle.Minutes, idt.idle.Seconds);
-			var activeTime = string.Format("{0:00}:{1:00}:{2:00}", idt.active.Hours, idt.active.Minutes,
-				idt.active.Seconds);
+			var elapsedTime = $"{idt.ts.Hours:00}:{idt.ts.Minutes:00}:{idt.ts.Seconds:00}";
+			var idledTime = $"{idt.idle.Hours:00}:{idt.idle.Minutes:00}:{idt.idle.Seconds:00}";
+			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
 
 			var lv = new ListViewItem(e.process);
 			lv.SubItems.Add(e.url);
@@ -580,12 +578,6 @@ namespace TimeTracker.View
 			}
 		}
 
-		private void WriteGlobalEventToDatabase(Event e)
-		{
-			// todo: implement
-		}
-
-
 		private void WriteGlobalEventToFile(Event e)
 		{
 			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
@@ -593,16 +585,9 @@ namespace TimeTracker.View
 			var fileExist = File.Exists(fileName);
 			var idt = Global.dictionaryEvents[e];
 
-			var elapsedTime = string.Format("{0:00}:{1:00}:{2:00}", idt.ts.Hours, idt.ts.Minutes, idt.ts.Seconds);
-			var idledTime = string.Format("{0:00}:{1:00}:{2:00}", idt.idle.Hours, idt.idle.Minutes, idt.idle.Seconds);
-			var activeTime = string.Format("{0:00}:{1:00}:{2:00}", idt.active.Hours, idt.active.Minutes,
-				idt.active.Seconds);
-
-			//lv.SubItems.Add(e.url);
-			//lv.SubItems.Add(elapsedTime);
-			//lv.SubItems.Add(idledTime);
-			//lv.SubItems.Add(idt.taskName);
-			//lv.SubItems.Add(activeTime);
+			var elapsedTime = $"{idt.ts.Hours:00}:{idt.ts.Minutes:00}:{idt.ts.Seconds:00}";
+			var idledTime = $"{idt.idle.Hours:00}:{idt.idle.Minutes:00}:{idt.idle.Seconds:00}";
+			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
 
 			using (var sw = new StreamWriter(fileName, true))
 			{
@@ -616,10 +601,17 @@ namespace TimeTracker.View
 				sw.Write($"{elapsedTime} | ");
 				sw.Write($"{idledTime} | ");
 				sw.Write($"{activeTime} | ");
-				if(!String.IsNullOrEmpty(e.url))
+				
+				if(!string.IsNullOrEmpty(e.url))
+				{
 					sw.Write($"{e.url} | ");
-				if(!String.IsNullOrEmpty(_winTitle))
+				}
+
+				if(!string.IsNullOrEmpty(_winTitle))
+				{
 					sw.Write($"{_winTitle}");
+				}
+
 				sw.Write($"\n");
 			}
 		}
