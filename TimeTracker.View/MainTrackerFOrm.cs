@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -117,14 +118,13 @@ namespace TimeTracker.View
 		{
 			var path = "./Captures/";
 			var today = DateTime.Now;
-			var fileName = $"{_psName}_{today.ToString("yyyyMMddhhmmss")}";
+			var fileName = $"{_psName}_{today:yyyyMMddhhmmss}";
 
 			Directory.CreateDirectory(path);
 
 			ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, applicationName, windowName);
 		}
 
-		//post or update time entries
 		public void TimeEntriesPost(Event e)
 		{
 			if (e == null)
@@ -299,7 +299,6 @@ namespace TimeTracker.View
 			Task.WaitAll(tasks);
 		}
 
-
 		private void WriteGlobalEventToScreen(int newItem, Event e)
 		{
 			var idt = Global.dictionaryEvents[e];
@@ -329,8 +328,11 @@ namespace TimeTracker.View
 
 		private void WriteGlobalEventToFile(Event e)
 		{
+			var path = "./Logs/";
+			Directory.CreateDirectory(path);
+
 			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
-			var fileName = $"Output{today}.csv";
+			var fileName = Path.Combine(path, $"Output{today}.csv");
 			var fileExist = File.Exists(fileName);
 			var idt = Global.dictionaryEvents[e];
 
@@ -373,12 +375,10 @@ namespace TimeTracker.View
 
 			Global.activeTotal += idt.activeDelta;
 
-			var newActiveFormated = string.Format("{0:00}:{1:00}:{2:00}", newActive.Hours, newActive.Minutes,
-				newActive.Seconds);
-			var activeTotal = string.Format("{0:00}:{1:00}:{2:00}", Global.activeTotal.Hours,
-				Global.activeTotal.Minutes, Global.activeTotal.Seconds);
+			var newActiveFormatted = $"{newActive.Hours:00}:{newActive.Minutes:00}:{newActive.Seconds:00}";
+			var activeTotal = $"{Global.activeTotal.Hours:00}:{Global.activeTotal.Minutes:00}:{Global.activeTotal.Seconds:00}";
 
-			listView2.Items[listId].SubItems[1].Text = newActiveFormated;
+			listView2.Items[listId].SubItems[1].Text = newActiveFormatted;
 			label17.Text = activeTotal;
 		}
 
@@ -388,9 +388,7 @@ namespace TimeTracker.View
 		{
 			Console.WriteLine("Idle monitoring...");
 
-			// TODO: will blow up if running as Debug mode within VS and try to record itself
-			uint currentTick = 0;
-			uint lastTick = 0;
+			// TODO: will blow up if running as Debug mode within VS and try to record itself. Find out why
 			var captured = false;
 			const int idleSecondElapsedToCapture = 3;
 
@@ -403,8 +401,8 @@ namespace TimeTracker.View
 					captured = false;
 				}
 
-				currentTick = (uint)Environment.TickCount;          //current tick count
-				lastTick = ProcessInfo.GetLastTick();               //last input tick count
+				var currentTick = (uint)Environment.TickCount;
+				var lastTick = ProcessInfo.GetLastTick();
 
 				if (lastTick == 0) //fails to get tick
 				{
@@ -440,10 +438,10 @@ namespace TimeTracker.View
 
 				if (_idleDebug == 1)
 				{
-					label14.Text = _idleSeconds.ToString();
-					label8.Text = _stopwatch.Elapsed.TotalSeconds.ToString();
-					label22.Text = "idled at    " + _idledAt.ToString();
-					label23.Text = "cont. from    " + _idleContinued.ToString();
+					label14.Text = _idleSeconds.ToString(CultureInfo.InvariantCulture);
+					label8.Text = _stopwatch.Elapsed.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+					label22.Text = "idled at    " + _idledAt.ToString(CultureInfo.InvariantCulture);
+					label23.Text = "cont. from    " + _idleContinued.ToString(CultureInfo.InvariantCulture);
 					label25.Text = _seconds.ToString();
 				}
 				else
