@@ -144,7 +144,7 @@ namespace TimeTracker.View
 
 			Global.dictionaryEvents[e].entryId = Guid.NewGuid().ToString();
 
-			Global.dictionaryEvents[e].lastPostedTs = idt.ts;
+			Global.dictionaryEvents[e].lastPostedTs = DateTimeOffset.Now;
 		}
 
 
@@ -167,26 +167,23 @@ namespace TimeTracker.View
 			idt.ts = _ts;
 			idt.entryId = "";
 
-			label28.Text = _idleSeconds.ToString();
+			label28.Text = _idleSeconds.ToString(CultureInfo.InvariantCulture);
 
 			_idleFreeze = Math.Floor(_idleSeconds);
-			//if (idleFreeze >= MIN_IDLE_SECONDS)
+			
 			if (_idleFreeze > 0)
 			{
 				label19.Text = _prevPs;
-				label20.Text = idt.ts.TotalSeconds.ToString();
-				label21.Text = _idleFreeze.ToString();
+				label20.Text = idt.ts.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+				label21.Text = _idleFreeze.ToString(CultureInfo.InvariantCulture);
 
 				if ((idt.ts.TotalSeconds - _idleFreeze) < 0) //error, when idle time is more than duration
 				{
-					string title, ps, url = string.Empty;
-					ProcessInfo.GetAll(out title, out ps, out url);
+					ProcessInfo.GetAll(out _, out var ps, out _);
 					label24.Text = ps;
 
-
-					//MessageBox.Show("idle problem");
 					_k++;
-					label29.Text = "Idle error occured# " + _k.ToString();
+					label29.Text = "Idle error occured# " + _k;
 
 					idt.idle = TimeSpan.FromSeconds(0.0);
 				}
@@ -225,10 +222,9 @@ namespace TimeTracker.View
 			associatedSet.Add(idt);
 
 			return associatedSet;
-		} //end associateDictionary
+		}
 
 
-		//insert events into dictionary
 		public Event DictionaryInsert()
 		{
 			//perform association
@@ -280,7 +276,7 @@ namespace TimeTracker.View
 
 			ResetIdle();
 			return e;
-		} //end dictionaryInsert
+		}
 
 		
 		private void StoreGlobal(int newItem, Event e)
@@ -344,20 +340,20 @@ namespace TimeTracker.View
 			{
 				if (!fileExist)
 				{
-					sw.WriteLine("Process | elapsedTime | idledTime | activeTime | url | name");
+					sw.WriteLine("Time|EntryId|Process|ElapsedTime|IdledTime|ActiveTime|Url|Name");
 				}
 
-				sw.Write($"{e.process} | ");
-				sw.Write($"{elapsedTime} | ");
-				sw.Write($"{idledTime} | ");
-				sw.Write($"{activeTime} | ");
-				sw.Write($"{e.url ?? ""} | ");
+				sw.Write($"{idt.lastPostedTs}|");
+				sw.Write($"{idt.entryId}|");
+				sw.Write($"{e.process}|");
+				sw.Write($"{elapsedTime}|");
+				sw.Write($"{idledTime}|");
+				sw.Write($"{activeTime}|");
+				sw.Write($"{e.url ?? ""}|");
 				sw.Write($"{_winTitle ?? ""}\n");
 			}
 		}
-		
 
-		//update times in time log
 		private void TaskTimeLogUpdate(Event e)
 		{
 			var idt = Global.dictionaryEvents[e];
@@ -382,8 +378,6 @@ namespace TimeTracker.View
 			label17.Text = activeTotal;
 		}
 
-
-		//thread to monitor idle
 		private void StartIdleMonitoring()
 		{
 			Console.WriteLine("Idle monitoring...");
