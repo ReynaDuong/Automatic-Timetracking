@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Drawing.Imaging;
+using System.Windows.Forms;
 
 namespace TimeTracker.View
 {
@@ -37,17 +35,9 @@ namespace TimeTracker.View
 		Stopwatch _stopwatch = new Stopwatch();
 		TimeSpan _ts = new TimeSpan();
 
-		Mutex _pollMutex = new Mutex(); //prevent from polling when choosing project/associations/deleting time entries, etc..
-
-		Mutex _idleMonitorMutex = new Mutex(); //protects 'idleSeconds' being written by posting/monitoring threads at the same time
-
-		Mutex _startPollingMutex = new Mutex(); //same for posting thread
-		Mutex _startIdleMonMutex = new Mutex(); //halt idle monitoring thread until project is selected 
-
 		int _i, _j, _k = 0;
 
 		public MainTrackerForm()
-			//public Form1()
 		{
 			try
 			{
@@ -62,9 +52,6 @@ namespace TimeTracker.View
 				CenterToScreen();
 				HideLabels();
 
-				//wait until a project is selected
-				_startPollingMutex.WaitOne();
-				_startIdleMonMutex.WaitOne();
 
 				//polling thread
 				Thread pollingThread;
@@ -87,13 +74,13 @@ namespace TimeTracker.View
 		//thread to poll
 		private void StartPolling()
 		{
+			Console.WriteLine("Polling...");
+
 			//wait for project selection before starting
-			_startPollingMutex.WaitOne(-1, false);
 			try
 			{
 				while (true)
 				{
-					_pollMutex.WaitOne();
 					Thread.Sleep(50);
 
 					ProcessInfo.GetAll(out _winTitle, out _psName, out _url); //get foreground window info
@@ -103,10 +90,10 @@ namespace TimeTracker.View
 						_stopwatch.Stop();
 						_ts = _stopwatch.Elapsed;
 
-						_idleMonitorMutex.WaitOne();
 						var e = DictionaryInsert();
-						_idleMonitorMutex.ReleaseMutex();
+
 						TimeEntriesPost(e); //post or update time entries
+						
 						_stopwatch.Restart();
 
 						_prevTitle = _winTitle;
@@ -117,18 +104,16 @@ namespace TimeTracker.View
 						label2.Text = _prevPs;
 						label4.Text = _prevUrl;
 					}
-					_pollMutex.ReleaseMutex();
 				} //end while
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
 			}
-		} //end polling thread
+		}
 
 
-		// capture the current active window
-		private void CaptureCurrentWindow (string applicationName, string windowName)
+		private void CaptureCurrentWindow(string applicationName, string windowName)
 		{
 			var path = "./Captures/";
 			var today = DateTime.Now;
@@ -136,7 +121,6 @@ namespace TimeTracker.View
 
 			Directory.CreateDirectory(path);
 
-			//			ProcessInfo.CaptureEntireWindowScreenShot(path, fileName, ImageFormat.Jpeg);
 			ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, applicationName, windowName);
 		}
 
@@ -149,82 +133,20 @@ namespace TimeTracker.View
 			}
 
 			var idt = Global.dictionaryEvents[e];
-			var start = DateTime.Today.AddHours(6.0); //adds 6 hours for central time
-			DateTime end;
-
-			string description;
-			string taskId;
 
 			if (idt.taskId.Equals("")) //undefined events (events with empty task ID) will not be uploaded
 			{
 				return;
 			}
 
-			if (!ShouldPost(idt, e)) //post only if more than a certain amount of differences in duration
-			{
-				return;
-			}
-
-			_i++; 
+			_i++;
 			label7.Text = _i.ToString();
 
-			if (idt.entryId.Equals("")) //POST, empty ID means this event hasn't been posted
-			{
-				if (e.process.Equals("chrome", StringComparison.InvariantCultureIgnoreCase))
-				{
-					description = e.url;
-					taskId = idt.taskId;
-				}
-
-				else
-				{
-					description = e.process;
-					taskId = idt.taskId;
-				}
-
-				end = DateTime.Parse(idt.active.ToString()).AddHours(6.0);
-
-				var res = Api.AddTimeEntry(start, end, description, Global.workspaceId, Global.projectId, taskId);
-				Global.dictionaryEvents[e].entryId =
-					res.id; //update dictionary value to include entry ID returned from clockify
-			}
-			else //PUT   
-			{
-				if (e.process.Equals("chrome", StringComparison.InvariantCultureIgnoreCase))
-				{
-					description = e.url;
-					taskId = idt.taskId;
-				}
-				else
-				{
-					description = e.process;
-					taskId = idt.taskId;
-				}
-
-				var entryId = idt.entryId;
-				end = DateTime.Parse(idt.active.ToString()).AddHours(6.0);
-				Api.UpdateTimeEntry(start, end, description, entryId, Global.workspaceId, Global.projectId, taskId);
-			}
+			Global.dictionaryEvents[e].entryId = Guid.NewGuid().ToString();
 
 			Global.dictionaryEvents[e].lastPostedTs = idt.ts;
-		} //end time entries post/update
-
-
-		//allow post or update if ts is more than a specified seconds of lastPostedTs
-		public bool ShouldPost(EventValues idt, Event e)
-		{
-			var ts = (uint) idt.ts.TotalSeconds;
-			var lastPostedTs = (uint) idt.lastPostedTs.TotalSeconds;
-
-			if ((ts - lastPostedTs) >= MinTimeToPost)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
 		}
+
 
 		//associate event to task ID and names for 'dictionaryEvent
 		public List<dynamic> AssociateForDictionaryEvents()
@@ -257,8 +179,6 @@ namespace TimeTracker.View
 
 				if ((idt.ts.TotalSeconds - _idleFreeze) < 0) //error, when idle time is more than duration
 				{
-					_idleMonitorMutex.WaitOne();
-
 					string title, ps, url = string.Empty;
 					ProcessInfo.GetAll(out title, out ps, out url);
 					label24.Text = ps;
@@ -267,8 +187,6 @@ namespace TimeTracker.View
 					//MessageBox.Show("idle problem");
 					_k++;
 					label29.Text = "Idle error occured# " + _k.ToString();
-
-					_idleMonitorMutex.ReleaseMutex();
 
 					idt.idle = TimeSpan.FromSeconds(0.0);
 				}
@@ -280,8 +198,7 @@ namespace TimeTracker.View
 			}
 
 			idt.active = idt.ts - idt.idle;
-			idt.activeDelta =
-				idt.active; //activeDelta is same as active from the very beginning, since it starts from zero
+			idt.activeDelta = idt.active; //activeDelta is same as active from the very beginning, since it starts from zero
 
 			//associate task by URL or process name based on if URL is empty
 			try
@@ -310,6 +227,7 @@ namespace TimeTracker.View
 			return associatedSet;
 		} //end associateDictionary
 
+
 		//insert events into dictionary
 		public Event DictionaryInsert()
 		{
@@ -327,8 +245,8 @@ namespace TimeTracker.View
 
 			try
 			{
-				if (Global.dictionaryEvents.ContainsKey(e)
-				) //if an event is already in the table, update timespan and idle time
+				// if an event is already in the table, update timespan and idle time
+				if (Global.dictionaryEvents.ContainsKey(e)) 
 				{
 					Global.dictionaryEvents[e].ts = Global.dictionaryEvents[e].ts + _ts;
 
@@ -344,14 +262,14 @@ namespace TimeTracker.View
 					Global.dictionaryEvents[e].activeDelta =
 						Global.dictionaryEvents[e].active - oldActive; //get differences of active times
 
-					HistoryUpdate(0, e);
+					StoreGlobal(0, e);
 					TaskTimeLogUpdate(e);
 				}
 				else
 				{
 					Global.dictionaryEvents.Add(e, idt);
 
-					HistoryUpdate(1, e);
+					StoreGlobal(1, e);
 					TaskTimeLogUpdate(e);
 				}
 			}
@@ -364,177 +282,8 @@ namespace TimeTracker.View
 			return e;
 		} //end dictionaryInsert
 
-		//start association from scratch, clears out all current dictionaries
-		private void AssociateRaw()
-		{
-			_i = _j = _k = 0;
-
-			listView1.Items.Clear();
-			listView2.Items.Clear();
-			label7.Text = _i.ToString();
-
-			var prevTitle = string.Empty;
-			var prevPs = string.Empty;
-			var prevUrl = string.Empty;
-
-			Global.ClearGlobals();
-
-			//binds task ID and name together, must be done before calling 'loadAssociation' since Association object needed to lookup task name by task ID
-			BindAllTaskIdName();
-
-			//load and associate value->taskId using SQL
-			var processes = Sql.LoadAssociations(1, Global.projectId);
-			var urLs = Sql.LoadAssociations(2, Global.projectId);
-
-			//adds event->task association
-			foreach (var ps in processes)
-			{
-				var t = new Dto.TaskDto() {id = ps.taskId, name = ps.taskName};
-
-				Global.associations.Add(ps.value, t);
-			}
-
-			//adds event->task association
-			foreach (var url in urLs)
-			{
-				var t = new Dto.TaskDto() {id = url.taskId, name = url.taskName};
-
-				Global.associations.Add(url.value, t);
-			}
-
-			BindDefinedTaskIdName();
-			BindDefinedTaskIdListId();
-
-			_stopwatch.Restart();
-			ResetIdle();
-		}
-
-		//binds task ID and name together
-		private void BindAllTaskIdName()
-		{
-			List<Dto.TaskDto> tasks = Api.GetTasksByProjectId(Global.workspaceId, Global.projectId);
-			foreach (var t in tasks)
-			{
-				Global.allTaskIdName.Add(t.id, t.name);
-			}
-		}
-
-		//binds tasksID to taskName that have an association to events
-		private void BindDefinedTaskIdName()
-		{
-			var taskId = string.Empty;
-			var taskName = string.Empty;
-
-			foreach (var t in Global.associations)
-			{
-				taskId = t.Value.id;
-				taskName = t.Value.name;
-
-				if (!Global.definedTaskIdName.ContainsKey(taskId))
-				{
-					Global.definedTaskIdName.Add(taskId, taskName);
-				}
-			}
-
-			//perform sorting
-			var sorted = Global.definedTaskIdName.ToList(); //convert dictionary to a list
-
-			sorted.Sort((pair1, pair2) =>
-				pair1.Value.CompareTo(pair2.Value)); //sort the list, by comparing the value of each pair
-
-			Global.definedTaskIdName.Clear(); //clears dictionary
-
-			foreach (var t in sorted) //insert sorted pair values back into dictionary
-			{
-				taskId = t.Key;
-				taskName = t.Value;
-
-				if (!Global.definedTaskIdName.ContainsKey(taskId))
-				{
-					Global.definedTaskIdName.Add(taskId, taskName);
-				}
-			}
-		}
-
-		//binds taskId with listId, and initializes columns for time log (tasks are listed in names)
-		private void BindDefinedTaskIdListId()
-		{
-			var taskId = string.Empty;
-			var taskName = string.Empty;
-			var startTime = string.Format("{0:00}:{1:00}:{2:00}", TimeSpan.FromSeconds(0).Hours,
-				TimeSpan.FromSeconds(0).Minutes, TimeSpan.FromSeconds(0).Seconds);
-
-			foreach (var t in Global.definedTaskIdName)
-			{
-				taskId = t.Key;
-				taskName = t.Value;
-
-				var lv = new ListViewItem(taskName);
-				lv.SubItems.Add(startTime);
-				listView2.Items.Add(lv);
-
-				var tl = new TimeLogInfo();
-				tl.listId = listView2.Items.IndexOf(lv);
-
-				Global.definedTaskIdTimeLogInfo.Add(taskId, tl);
-			}
-
-			label17.Text = startTime;
-		}
-
-		//delete time entries of a workspace
-		private void button3_Click(object sender, EventArgs e)
-		{
-			if (Global.workspaceId.Equals(string.Empty))
-			{
-				MessageBox.Show("Session is not running, choose a workspace/project first.");
-				return;
-			}
-
-			var delete = new Thread(DeleteEntries);
-			delete.Start();
-		}
-
-		//thread to delete time entries
-		private void DeleteEntries()
-		{
-			button1.Enabled = false;
-			button2.Enabled = false;
-			button3.Enabled = false;
-			button4.Enabled = false;
-
-			_pollMutex.WaitOne();
-			_idleMonitorMutex.WaitOne();
-
-			AssociateRaw();
-			label1.Text = "Deleting time entries..";
-
-			var entries = new List<Dto.TimeEntryFullDto>();
-			while ((entries = Api.FindTimeEntriesByWorkspace(Global.workspaceId)).Count > 0)
-			{
-				foreach (var entry in entries)
-				{
-					label2.Text = entry.description;
-					label4.Text = entry.id;
-					Api.DeleteTimeEntry(Global.workspaceId, entry.id);
-				}
-			}
-
-			label1.Text = "";
-			label2.Text = "";
-			label4.Text = "";
-
-			_idleMonitorMutex.ReleaseMutex();
-			_pollMutex.ReleaseMutex();
-
-			button1.Enabled = true;
-			button2.Enabled = true;
-			button3.Enabled = true;
-			button4.Enabled = true;
-		}
-
-		//update listView
-		private void HistoryUpdate(int newItem, Event e)
+		
+		private void StoreGlobal(int newItem, Event e)
 		{
 			var tasks = new[]
 			{
@@ -593,7 +342,6 @@ namespace TimeTracker.View
 			{
 				if (!fileExist)
 				{
-					//sw.WriteLine("TaskId | TaskName | LastPostedTime | Active | TimeStamp");
 					sw.WriteLine("Process | elapsedTime | idledTime | activeTime | url | name");
 				}
 
@@ -601,21 +349,10 @@ namespace TimeTracker.View
 				sw.Write($"{elapsedTime} | ");
 				sw.Write($"{idledTime} | ");
 				sw.Write($"{activeTime} | ");
-				
-				if(!string.IsNullOrEmpty(e.url))
-				{
-					sw.Write($"{e.url} | ");
-				}
-
-				if(!string.IsNullOrEmpty(_winTitle))
-				{
-					sw.Write($"{_winTitle}");
-				}
-
-				sw.Write($"\n");
+				sw.Write($"{e.url ?? ""} | ");
+				sw.Write($"{_winTitle ?? ""}\n");
 			}
 		}
-
 		
 
 		//update times in time log
@@ -645,71 +382,13 @@ namespace TimeTracker.View
 			label17.Text = activeTotal;
 		}
 
-		//associations (Form 4)
-		private void button1_Click(object sender, EventArgs e)
-		{
-			_pollMutex.WaitOne(); //prevent inserting into dictionary while making association changes
-			_idleMonitorMutex.WaitOne();
-
-			var f = new TaskAssociationForm();
-			f.StartPosition = FormStartPosition.CenterParent;
-			f.ShowDialog(this);
-
-			if (Global.chosen == 1)
-			{
-				AssociateRaw();
-				Global.chosen = 0;
-			}
-
-			_idleMonitorMutex.ReleaseMutex();
-			_pollMutex.ReleaseMutex();
-		}
-
-		//projects (Form 3)
-		private void button2_Click(object sender, EventArgs e)
-		{
-			_pollMutex.WaitOne(); //prevent inserting into dictionary while making association changes
-			_idleMonitorMutex.WaitOne();
-
-			var f = new ProjectSelectionForm();
-			f.StartPosition = FormStartPosition.CenterParent;
-			f.ShowDialog(this);
-
-			if (Global.chosen == 1)
-			{
-				projectName.Text = Global.projectName;
-				label13.Text = Global.workspaceName;
-
-				AssociateRaw();
-
-				try
-				{
-					_startPollingMutex.ReleaseMutex();
-				}
-				catch
-				{
-				}
-
-				try
-				{
-					_startIdleMonMutex.ReleaseMutex();
-				}
-				catch
-				{
-				}
-
-				Global.chosen = 0;
-			}
-
-			_idleMonitorMutex.ReleaseMutex();
-			_pollMutex.ReleaseMutex();
-		}
 
 		//thread to monitor idle
 		private void StartIdleMonitoring()
 		{
+			Console.WriteLine("Idle monitoring...");
+
 			// TODO: will blow up if running as Debug mode within VS and try to record itself
-			_startIdleMonMutex.WaitOne(-1, false);
 			uint currentTick = 0;
 			uint lastTick = 0;
 			var captured = false;
@@ -717,7 +396,6 @@ namespace TimeTracker.View
 
 			while (true)
 			{
-				_idleMonitorMutex.WaitOne();
 				Thread.Sleep(50);
 
 				if (_idleSeconds < 1)
@@ -725,15 +403,15 @@ namespace TimeTracker.View
 					captured = false;
 				}
 
-				currentTick = (uint) Environment.TickCount;			//current tick count
-				lastTick = ProcessInfo.GetLastTick();				//last input tick count
+				currentTick = (uint)Environment.TickCount;          //current tick count
+				lastTick = ProcessInfo.GetLastTick();               //last input tick count
 
 				if (lastTick == 0) //fails to get tick
 				{
 					continue;
 				}
 
-				_seconds = (currentTick - lastTick) / 1000;			//convert to seconds
+				_seconds = (currentTick - lastTick) / 1000;         //convert to seconds
 				if (_seconds >= MinIdleSeconds)
 				{
 					if (_idling == false)
@@ -752,7 +430,7 @@ namespace TimeTracker.View
 				if (_seconds >= MinIdleSeconds && _idling == true)
 				{
 					_idleSeconds = _idleContinued + (_stopwatch.Elapsed.TotalSeconds - _idledAt);
-					
+
 					if (_idleSeconds > idleSecondElapsedToCapture && !captured)
 					{
 						CaptureCurrentWindow(_psName, _winTitle);
@@ -770,14 +448,10 @@ namespace TimeTracker.View
 				}
 				else
 				{
-					label14.Text = ((int) _idleSeconds).ToString();
+					label14.Text = ((int)_idleSeconds).ToString();
 				}
 
-
-				_idleMonitorMutex.ReleaseMutex();
 			}
-			
-//			_startIdleMonMutex.ReleaseMutex();
 
 		}
 
@@ -826,11 +500,6 @@ namespace TimeTracker.View
 				label28.Visible = true;
 				label29.Visible = true;
 			}
-		}
-
-		private void label19_Click(object sender, EventArgs e)
-		{
-
 		}
 
 		private void button4_Click(object sender, EventArgs e)

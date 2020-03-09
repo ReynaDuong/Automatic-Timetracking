@@ -189,26 +189,6 @@
 			this.label7.TabIndex = 7;
 			this.label7.Text = "0";
 			// 
-			// button1
-			// 
-			this.button1.Location = new System.Drawing.Point(730, 83);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(75, 23);
-			this.button1.TabIndex = 2;
-			this.button1.Text = "Associations";
-			this.button1.UseVisualStyleBackColor = true;
-			this.button1.Click += new System.EventHandler(this.button1_Click);
-			// 
-			// button2
-			// 
-			this.button2.Location = new System.Drawing.Point(730, 54);
-			this.button2.Name = "button2";
-			this.button2.Size = new System.Drawing.Size(75, 23);
-			this.button2.TabIndex = 1;
-			this.button2.Text = "Projects";
-			this.button2.UseVisualStyleBackColor = true;
-			this.button2.Click += new System.EventHandler(this.button2_Click);
-			// 
 			// projectName
 			// 
 			this.projectName.AutoSize = true;
@@ -239,16 +219,7 @@
 			this.label11.Size = new System.Drawing.Size(60, 17);
 			this.label11.TabIndex = 13;
 			this.label11.Text = "Project: ";
-			// 
-			// button3
-			// 
-			this.button3.Location = new System.Drawing.Point(730, 112);
-			this.button3.Name = "button3";
-			this.button3.Size = new System.Drawing.Size(75, 40);
-			this.button3.TabIndex = 3;
-			this.button3.Text = "Remove Time Entries";
-			this.button3.UseVisualStyleBackColor = true;
-			this.button3.Click += new System.EventHandler(this.button3_Click);
+
 			// 
 			// workspaceLabel
 			// 

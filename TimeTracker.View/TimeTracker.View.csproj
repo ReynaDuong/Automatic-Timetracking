@@ -84,25 +84,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API.cs" />
     <Compile Include="Association.cs" />
-    <Compile Include="SQL.cs" />
     <Compile Include="Dto.cs" />
     <Compile Include="EventValues.cs" />
     <Compile Include="Event.cs" />
-    <Compile Include="ProjectSelectionForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProjectSelectionForm.Designer.cs">
-      <DependentUpon>ProjectSelectionForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="TaskAssociationForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TaskAssociationForm.Designer.cs">
-      <DependentUpon>TaskAssociationForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Rest.cs" />
     <Compile Include="MainTrackerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -118,26 +103,11 @@
     <EmbeddedResource Include="MainTrackerForm.resx">
       <DependentUpon>MainTrackerForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LoginForm.resx">
-      <DependentUpon>LoginForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProjectSelectionForm.resx">
-      <DependentUpon>ProjectSelectionForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="TaskAssociationForm.resx">
-      <DependentUpon>TaskAssociationForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Compile Include="LoginForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="LoginForm.Designer.cs">
-      <DependentUpon>LoginForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
