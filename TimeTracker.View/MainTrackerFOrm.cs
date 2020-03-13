@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,7 +14,6 @@ namespace TimeTracker.View
 		int _idleDebug = 0;
 
 		private const uint MinIdleSeconds = 3; //minimum seconds that trips the idle counter
-		private const int MinTimeToPost = 0; //minimum second of differences in duration before posting
 
 		bool _idling = false;
 		uint _seconds = 0;
@@ -32,7 +30,6 @@ namespace TimeTracker.View
 		string _prevPs = string.Empty; //previous psName
 		string _prevUrl = string.Empty; //previous URL
 
-		string _elapsedTime = string.Empty;
 		Stopwatch _stopwatch = new Stopwatch();
 		TimeSpan _ts = new TimeSpan();
 
