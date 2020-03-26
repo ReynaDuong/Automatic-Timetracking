@@ -15,12 +15,9 @@
 
         public override bool Equals(object obj)     //same, but only runs when there are collisions
         {
-            Event e = (Event)obj;
+	        Event e = (Event)obj;
 
-            if (e.GetHashCode() == obj.GetHashCode())
-                return true;
-            else
-                return false;
+	        return e.GetHashCode() == obj.GetHashCode();
         }
         
     }

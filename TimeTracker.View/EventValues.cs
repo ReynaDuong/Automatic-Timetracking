@@ -13,6 +13,7 @@ namespace TimeTracker.View
         public TimeSpan idle { get; set; }
         public TimeSpan active { get; set; }
         public TimeSpan activeDelta { get; set; }
-        public TimeSpan lastPostedTs { get; set; }
+        public DateTimeOffset lastPostedTs { get; set; }
+
     }
 }

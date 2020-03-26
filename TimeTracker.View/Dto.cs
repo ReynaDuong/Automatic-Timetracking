@@ -2,6 +2,7 @@
 
 namespace TimeTracker.View
 {
+    // TODO: lots of these are now obsolete. Clean up.
     public class Dto
     {
         public class ProjectFullDto
