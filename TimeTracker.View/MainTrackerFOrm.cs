@@ -351,6 +351,35 @@ namespace TimeTracker.View
 			}
 		}
 
+		private void WriteGlobalEventsJson(Event e)
+        {
+			var path = "./Logs/";
+			Directory.CreateDirectory(path);
+
+			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
+			var fileName = Path.Combine(path, $"Output{today}.json");
+			var fileExist = File.Exists(fileName);
+			var idt = Global.dictionaryEvents[e];
+
+			var elapsedTime = $"{idt.ts.Hours:00}:{idt.ts.Minutes:00}:{idt.ts.Seconds:00}";
+			var idledTime = $"{idt.idle.Hours:00}:{idt.idle.Minutes:00}:{idt.idle.Seconds:00}";
+			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
+
+			using (var sw = new StreamWriter(fileName, true))
+            {
+				sw.Write($"{{\"timestamp\":\"{idt.lastPostedTs}\",\n");
+				sw.Write($"\"id\":\"{idt.entryId}\",\n");
+				sw.Write($"\"os\":\"Windows\",\n");
+				sw.Write($"\"process\":\"{e.process}\",\n");
+				sw.Write($"\"duration\":\"{elapsedTime}\",\n");
+				sw.Write($"\"idle\":\"{idledTime}\",\n");
+				sw.Write($"\"active\":\"{activeTime}\",\n");
+				sw.Write($"\"url\":\"{e.url ?? ""}\",\n");
+				sw.Write($"\"title\":\"{_winTitle ?? ""}\"}}\n");
+			}
+
+		}
+
 		private void TaskTimeLogUpdate(Event e)
 		{
 			var idt = Global.dictionaryEvents[e];
