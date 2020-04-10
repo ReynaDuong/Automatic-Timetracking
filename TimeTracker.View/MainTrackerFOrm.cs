@@ -281,7 +281,8 @@ namespace TimeTracker.View
 			var tasks = new[]
 			{
 				new Task(() => WriteGlobalEventToScreen(newItem, e)),
-				new Task(() => WriteGlobalEventToFile(e))
+				new Task(() => WriteGlobalEventToFile(e)),
+				new Task(() => WriteGlobalEventsJson(e))
 			};
 
 			foreach (var task in tasks)
