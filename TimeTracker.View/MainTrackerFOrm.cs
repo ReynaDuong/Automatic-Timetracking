@@ -330,6 +330,8 @@ namespace TimeTracker.View
 			var fileExist = File.Exists(fileName);
 			var idt = Global.dictionaryEvents[e];
 
+			var timestamp = DateTime.Now;
+
 			var elapsedTime = $"{idt.ts.Hours:00}:{idt.ts.Minutes:00}:{idt.ts.Seconds:00}";
 			var idledTime = $"{idt.idle.Hours:00}:{idt.idle.Minutes:00}:{idt.idle.Seconds:00}";
 			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
@@ -341,7 +343,7 @@ namespace TimeTracker.View
 					sw.WriteLine("Time|EntryId|Process|ElapsedTime|IdledTime|ActiveTime|Url|Name");
 				}
 
-				sw.Write($"{idt.lastPostedTs}|");
+				sw.Write($"{timestamp}|");
 				sw.Write($"{idt.entryId}|");
 				sw.Write($"{e.process}|");
 				sw.Write($"{elapsedTime}|");
@@ -366,9 +368,12 @@ namespace TimeTracker.View
 			var idledTime = $"{idt.idle.Hours:00}:{idt.idle.Minutes:00}:{idt.idle.Seconds:00}";
 			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
 
+			var timestamp = DateTime.Now;
+			//var timestamp_format = $"{timestamp:hh:mm:ss}";
+
 			using (var sw = new StreamWriter(fileName, true))
             {
-				sw.Write($"{{\"timestamp\":\"{idt.lastPostedTs}\",\n");
+				sw.Write($"{{\"timestamp\":\"{timestamp}\",\n");
 				sw.Write($"\"id\":\"{idt.entryId}\",\n");
 				sw.Write($"\"os\":\"Windows\",\n");
 				sw.Write($"\"process\":\"{e.process}\",\n");
