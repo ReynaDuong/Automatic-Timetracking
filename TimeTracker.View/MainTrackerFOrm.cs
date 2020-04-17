@@ -25,6 +25,7 @@ namespace TimeTracker.View
 		string _winTitle = string.Empty; //current winTitle
 		string _psName = string.Empty; //current psName
 		string _url = string.Empty; //current URL
+		string _screenshotname = string.Empty; // screenshot of idle window
 
 		string _prevTitle = string.Empty; //previous winTitle
 		string _prevPs = string.Empty; //previous psName
@@ -32,6 +33,8 @@ namespace TimeTracker.View
 
 		Stopwatch _stopwatch = new Stopwatch();
 		TimeSpan _ts = new TimeSpan();
+
+		
 
 		int _i, _j, _k = 0;
 
@@ -116,6 +119,7 @@ namespace TimeTracker.View
 			var path = "./Captures/";
 			var today = DateTime.Now;
 			var fileName = $"{_psName}_{today:yyyyMMddhhmmss}";
+			_screenshotname = fileName;
 
 			Directory.CreateDirectory(path);
 
@@ -369,6 +373,8 @@ namespace TimeTracker.View
 			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
 
 			var timestamp = DateTime.Now;
+			string fullPath = Path.GetFullPath(_screenshotname);
+
 			//var timestamp_format = $"{timestamp:hh:mm:ss}";
 
 			using (var sw = new StreamWriter(fileName, true))
@@ -382,6 +388,7 @@ namespace TimeTracker.View
 				sw.Write($"\"active\":\"{activeTime}\",\n");
 				sw.Write($"\"url\":\"{e.url ?? ""}\",\n");
 				sw.Write($"\"title\":\"{_winTitle ?? ""}\"}}\n");
+				sw.Write($"\"screenshot\":\"{path}\",\n");
 			}
 
 		}
