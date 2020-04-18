@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TimeTracker.View.EventReport.Consumer;
 
 namespace TimeTracker.View
 {
@@ -121,9 +122,7 @@ namespace TimeTracker.View
 
 			Directory.CreateDirectory(path);
 
-			ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, applicationName, windowName);
-
-			return Path.GetFullPath(Path.Combine(path, fileName));
+			return ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, applicationName, windowName);
 		}
 
 		public void TimeEntriesPost(Event e)
@@ -282,11 +281,27 @@ namespace TimeTracker.View
 		
 		private void StoreGlobal(int newItem, Event e)
 		{
+			var report = new Report(e, Global.dictionaryEvents[e], _winTitle, screenshot);
+			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
+			var path = "./Logs/";
+			Directory.CreateDirectory(path);
+			string reportName;
+
 			var tasks = new[]
 			{
 				new Task(() => WriteGlobalEventToScreen(newItem, e)),
-				new Task(() => WriteGlobalEventToFlatFile(e)),
-				new Task(() => WriteGlobalEventsJson(e))
+
+				new Task(() =>
+				{
+					reportName = Path.Combine(path, $"Output{today}.csv");
+					WriteGlobalEventToFlatFile(reportName, report);
+				}),
+
+				new Task(() =>
+				{
+					reportName = Path.Combine(path, $"Output{today}.json");
+					WriteGlobalEventsJson(reportName, report);
+				})
 			};
 
 			foreach (var task in tasks)
@@ -324,71 +339,16 @@ namespace TimeTracker.View
 			}
 		}
 
-		private void WriteGlobalEventToFlatFile(Event e)
+		private void WriteGlobalEventToFlatFile(string reportName, Report report)
 		{
-			var path = "./Logs/";
-			Directory.CreateDirectory(path);
-
-			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
-			var fileName = Path.Combine(path, $"Output{today}.csv");
-			var fileExist = File.Exists(fileName);
-			var idt = Global.dictionaryEvents[e];
-
-			var timestamp = DateTime.Now;
-
-			var elapsedTime = $"{idt.ts.Hours:00}:{idt.ts.Minutes:00}:{idt.ts.Seconds:00}";
-			var idledTime = $"{idt.idle.Hours:00}:{idt.idle.Minutes:00}:{idt.idle.Seconds:00}";
-			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
-
-			using (var sw = new StreamWriter(fileName, true))
-			{
-				if (!fileExist)
-				{
-					sw.WriteLine("Time|EntryId|Process|ElapsedTime|IdledTime|ActiveTime|Url|Title");
-				}
-
-				sw.Write($"{timestamp}|");
-				sw.Write($"{idt.entryId}|");
-				sw.Write($"{e.process}|");
-				sw.Write($"{elapsedTime}|");
-				sw.Write($"{idledTime}|");
-				sw.Write($"{activeTime}|");
-				sw.Write($"{e.url ?? ""}|");
-//				sw.Write($"{_winTitle ?? ""}|");
-				sw.Write($"{_winTitle ?? ""}\n");
-			}
+			var consumer = ReportConsumerFactory.GetFlatFileReportConsumer(reportName);
+			consumer.WriteToFile(report);
 		}
 
-		private void WriteGlobalEventsJson(Event e)
-        {
-			var path = "./Logs/";
-			Directory.CreateDirectory(path);
-
-			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
-			var fileName = Path.Combine(path, $"Output{today}.json");
-			var idt = Global.dictionaryEvents[e];
-
-			var elapsedTime = $"{idt.ts.Hours:00}:{idt.ts.Minutes:00}:{idt.ts.Seconds:00}";
-			var idledTime = $"{idt.idle.Hours:00}:{idt.idle.Minutes:00}:{idt.idle.Seconds:00}";
-			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
-			var timestamp = DateTime.Now;
-
-			//var timestamp_format = $"{timestamp:hh:mm:ss}";
-
-			using (var sw = new StreamWriter(fileName, true))
-            {
-				sw.Write($"{{\"timestamp\":\"{timestamp}\",\n");
-				sw.Write($"\"id\":\"{idt.entryId}\",\n");
-				sw.Write($"\"os\":\"Windows\",\n");
-				sw.Write($"\"process\":\"{e.process}\",\n");
-				sw.Write($"\"duration\":\"{elapsedTime}\",\n");
-				sw.Write($"\"idle\":\"{idledTime}\",\n");
-				sw.Write($"\"active\":\"{activeTime}\",\n");
-				sw.Write($"\"url\":\"{e.url ?? ""}\",\n");
-				sw.Write($"\"title\":\"{_winTitle ?? ""}\",\n");
-				sw.Write($"\"screenShot\":\"{screenshot.Replace("\\", "\\\\")}\"}}\n");
-			}
-
+		private void WriteGlobalEventsJson(string reportName, Report report)
+		{
+			var consumer = ReportConsumerFactory.GetJsonReportConsumer(reportName);
+			consumer.WriteToFile(report);
 		}
 
 		private void TaskTimeLogUpdate(Event e)
