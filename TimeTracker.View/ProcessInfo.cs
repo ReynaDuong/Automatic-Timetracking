@@ -162,7 +162,7 @@ namespace TimeTracker.View
 				bitmap.Save(fileName, ImageFormat.Jpeg);
 			}
 
-			return fileName;
+			return Path.GetFullPath(fileName);
 		}
 
 		public static void CaptureEntireWindowScreenShot(string filePath, string fileName, ImageFormat format)

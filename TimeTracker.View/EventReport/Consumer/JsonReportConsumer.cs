@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace TimeTracker.View.EventReport.Consumer
 {
@@ -10,14 +12,19 @@ namespace TimeTracker.View.EventReport.Consumer
 	{
 		public JsonReportConsumer(string reportPath) : base(reportPath)
 		{
+			if (File.Exists(reportPath))
+			{
+				var jsonString = File.ReadAllText(reportPath);
+				reports = JsonConvert.DeserializeObject<List<Report>>(jsonString);
+			}
 		}
 
 		public override void WriteToFile(Report report)
 		{
 			reports.Add(report);
-
-			var jsonData = JsonConvert.SerializeObject(reports);
-			System.IO.File.WriteAllText(reportPath, jsonData);
+			
+			var jsonData = JsonConvert.SerializeObject(reports, Formatting.Indented);
+			File.WriteAllText(reportPath, jsonData);
 		}
 	}
 }
