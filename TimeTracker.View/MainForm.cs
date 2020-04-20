@@ -116,7 +116,8 @@ namespace TimeTracker.View
 
 		private string CaptureCurrentWindow(string applicationName, string windowName)
 		{
-			var path = "./Captures/";
+			var userpath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			var path = userpath + "/Captures/";
 			var today = DateTime.Now;
 			var fileName = $"{_psName}_{today:yyyyMMddhhmmss}";
 
@@ -283,7 +284,9 @@ namespace TimeTracker.View
 		{
 			var report = new Report(e, Global.dictionaryEvents[e], _winTitle, screenshot);
 			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
-			var path = "./Logs/";
+			// add environment variable to get user path
+			var userpath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			var path = userpath + "/Logs/";
 			Directory.CreateDirectory(path);
 			string reportName;
 
