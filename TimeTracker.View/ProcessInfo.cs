@@ -128,7 +128,7 @@ namespace TimeTracker.View
 			}
 		}
 
-		public static void CaptureActiveWindowScreenShot(string filePath, string fileName, string applicationName, string windowsTitle)
+		public static string CaptureActiveWindowScreenShot(string filePath, string fileName, string applicationName, string windowsTitle)
 		{
 			Console.WriteLine($"Application name = {applicationName}");
 			Console.WriteLine($"Windows title = {windowsTitle}");
@@ -161,6 +161,8 @@ namespace TimeTracker.View
 
 				bitmap.Save(fileName, ImageFormat.Jpeg);
 			}
+
+			return Path.GetFullPath(fileName);
 		}
 
 		public static void CaptureEntireWindowScreenShot(string filePath, string fileName, ImageFormat format)

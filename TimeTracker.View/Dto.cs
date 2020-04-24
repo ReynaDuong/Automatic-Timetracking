@@ -71,6 +71,25 @@ namespace TimeTracker.View
             public string[] tagIds { get; set; }
         }
 
+        public class Jsonloggingentry
+        {
+            public string timestamp { get; set; }
+            public string macAddress { get; set; }
+            public string ipAddress { get; set; }
+            public string netCard { get; set; } // Not sure exactly what this is
+            public string ipHostname { get; set; }
+            public string os { get; set; }
+            public string browser { get; set; }
+            public string process { get; set; }
+            public string url { get; set; }
+            public string duration { get; set; }
+            public string idle { get; set; }
+            public string active { get; set; }
+            public string title { get; set; } // Title of what? 
+            public string selectPos { get; set; } // Not sure what this is
+            public string guiBitmapPayload { get; set; }
+        }
+
         public class TaskRequest
         {
             public string id;

@@ -13,7 +13,7 @@ namespace TimeTracker.View
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainTrackerForm());
+            Application.Run(new MainForm());
 
             
             //Application.Run(new Form1());

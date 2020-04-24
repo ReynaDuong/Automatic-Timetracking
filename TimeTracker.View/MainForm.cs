@@ -6,10 +6,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TimeTracker.View.EventReport.Consumer;
 
 namespace TimeTracker.View
 {
-	public partial class MainTrackerForm : Form
+	public partial class MainForm : Form
 	{
 		int _idleDebug = 0;
 
@@ -32,10 +33,12 @@ namespace TimeTracker.View
 
 		Stopwatch _stopwatch = new Stopwatch();
 		TimeSpan _ts = new TimeSpan();
+		private string screenshot;
+		
 
 		int _i, _j, _k = 0;
 
-		public MainTrackerForm()
+		public MainForm()
 		{
 			try
 			{
@@ -111,15 +114,16 @@ namespace TimeTracker.View
 		}
 
 
-		private void CaptureCurrentWindow(string applicationName, string windowName)
+		private string CaptureCurrentWindow(string applicationName, string windowName)
 		{
-			var path = "./Captures/";
+			var userpath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			var path = userpath + "/Captures/";
 			var today = DateTime.Now;
 			var fileName = $"{_psName}_{today:yyyyMMddhhmmss}";
 
 			Directory.CreateDirectory(path);
 
-			ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, applicationName, windowName);
+			return ProcessInfo.CaptureActiveWindowScreenShot(path, fileName, applicationName, windowName);
 		}
 
 		public void TimeEntriesPost(Event e)
@@ -278,10 +282,29 @@ namespace TimeTracker.View
 		
 		private void StoreGlobal(int newItem, Event e)
 		{
+			var report = new Report(e, Global.dictionaryEvents[e], _winTitle, screenshot);
+			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
+			// add environment variable to get user path
+			var userpath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			var path = userpath + "/Logs/";
+			Directory.CreateDirectory(path);
+			string reportName;
+
 			var tasks = new[]
 			{
 				new Task(() => WriteGlobalEventToScreen(newItem, e)),
-				new Task(() => WriteGlobalEventToFile(e))
+
+				new Task(() =>
+				{
+					reportName = Path.Combine(path, $"Output{today}.csv");
+					WriteGlobalEventToFlatFile(reportName, report);
+				}),
+
+				new Task(() =>
+				{
+					reportName = Path.Combine(path, $"Output{today}.json");
+					WriteGlobalEventsJson(reportName, report);
+				})
 			};
 
 			foreach (var task in tasks)
@@ -319,36 +342,16 @@ namespace TimeTracker.View
 			}
 		}
 
-		private void WriteGlobalEventToFile(Event e)
+		private void WriteGlobalEventToFlatFile(string reportName, Report report)
 		{
-			var path = "./Logs/";
-			Directory.CreateDirectory(path);
+			var consumer = ReportConsumerFactory.GetFlatFileReportConsumer(reportName);
+			consumer.WriteToFile(report);
+		}
 
-			var today = DateTime.Now.Date.ToString("yyyy_MM_dd");
-			var fileName = Path.Combine(path, $"Output{today}.csv");
-			var fileExist = File.Exists(fileName);
-			var idt = Global.dictionaryEvents[e];
-
-			var elapsedTime = $"{idt.ts.Hours:00}:{idt.ts.Minutes:00}:{idt.ts.Seconds:00}";
-			var idledTime = $"{idt.idle.Hours:00}:{idt.idle.Minutes:00}:{idt.idle.Seconds:00}";
-			var activeTime = $"{idt.active.Hours:00}:{idt.active.Minutes:00}:{idt.active.Seconds:00}";
-
-			using (var sw = new StreamWriter(fileName, true))
-			{
-				if (!fileExist)
-				{
-					sw.WriteLine("Time|EntryId|Process|ElapsedTime|IdledTime|ActiveTime|Url|Name");
-				}
-
-				sw.Write($"{idt.lastPostedTs}|");
-				sw.Write($"{idt.entryId}|");
-				sw.Write($"{e.process}|");
-				sw.Write($"{elapsedTime}|");
-				sw.Write($"{idledTime}|");
-				sw.Write($"{activeTime}|");
-				sw.Write($"{e.url ?? ""}|");
-				sw.Write($"{_winTitle ?? ""}\n");
-			}
+		private void WriteGlobalEventsJson(string reportName, Report report)
+		{
+			var consumer = ReportConsumerFactory.GetJsonReportConsumer(reportName);
+			consumer.WriteToFile(report);
 		}
 
 		private void TaskTimeLogUpdate(Event e)
@@ -422,7 +425,8 @@ namespace TimeTracker.View
 
 					if (_idleSeconds > idleSecondElapsedToCapture && !captured)
 					{
-						CaptureCurrentWindow(_psName, _winTitle);
+						screenshot = CaptureCurrentWindow(_psName, _winTitle);
+
 						captured = true;
 					}
 				}

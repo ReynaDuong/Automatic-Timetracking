@@ -14,6 +14,7 @@ namespace TimeTracker.View
         public TimeSpan active { get; set; }
         public TimeSpan activeDelta { get; set; }
         public DateTimeOffset lastPostedTs { get; set; }
+        public string screenShotPath { get; set; }
 
     }
 }
