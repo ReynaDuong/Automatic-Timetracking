@@ -1,20 +1,16 @@
 # Automatic-Timetracking
-### This is senior Program
+### Senior Design Project: Spring 2020
 
-database info:<br />
--name - mydb<br />
--UN - student<br />
--PW - student<br />
--144.202.73.223:3306<br />
--144.202.73.223/phpmyadmin (management)<br />
+This application detects Windows processes and captures logs as well as updates the UI in real time.
 
-Chrome Extension Download Link and Installation (Latest version):<br />
--Faster, offers full title<br />
--Link - https://drive.google.com/open?id=1rJ2oVadnrJQQ3Qi7H5aZLtboXoAjxVmM<br />
--To install extension..<br />
--1. turn on 'Developer Mode' in extension manager <br />
--2. click on 'Load Unpacked' <br />
--3. select the folder of 'URL to Tab'. <br />
-
-Chrome Extension Link (Older version):<br />
-https://chrome.google.com/webstore/detail/url-to-tab/kpkgbcfhfajhfgeodinlkmfddfohgapd?authuser=1
+This is an enhancement of a previous iteration of this project where this group sucessfully:
+- removed Clockify API
+  - therefore removing the need for this application to require login/password credentials
+- outputted the logs as CSV
+- outputted the logs as JSON
+  - where the previous iteration only had these processes captured in the UI
+- captured the window of each idle process
+  - where the previous iteration captured the entire desktop of each idle process
+  
+  
+We utilized Visual Studio and C# to work on this project, and it works locally if you pull this repo and run the "start without debugging" command and are delivering a runnable .msi to Fellows Consulting Group.

@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTracker.View", "TimeTracker.View\TimeTracker.View.csproj", "{C2AF5658-FFBB-4BC6-830D-0609BB546ED1}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TimeTracker Wizard", "TimeTracker Wizard\TimeTracker Wizard.vdproj", "{CEC27475-C855-4232-9588-E58B5ABFD628}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C2AF5658-FFBB-4BC6-830D-0609BB546ED1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2AF5658-FFBB-4BC6-830D-0609BB546ED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2AF5658-FFBB-4BC6-830D-0609BB546ED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2AF5658-FFBB-4BC6-830D-0609BB546ED1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEC27475-C855-4232-9588-E58B5ABFD628}.Debug|Any CPU.ActiveCfg = Debug
+		{CEC27475-C855-4232-9588-E58B5ABFD628}.Release|Any CPU.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C2DD1D52-3C7F-47E6-A732-7793E6C9A55A}
+	EndGlobalSection
+EndGlobal
